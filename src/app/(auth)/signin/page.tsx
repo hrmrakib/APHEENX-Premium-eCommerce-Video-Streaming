@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signin } from "@/lib/auth";
+import { useLoginMutation } from "@/queries/auth.queries";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const loginMutation = useLoginMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,14 +27,19 @@ export default function SignInPage() {
       return;
     }
 
-    setLoading(true);
-    const result = signin(email, password, remember);
-    if (result.success) {
-      router.push("/");
-    } else {
-      setError(result.message);
-      setLoading(false);
-    }
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          router.push("/");
+        },
+        onError: (err: any) => {
+          setError(
+            err.response?.data?.message || "An error occurred during sign in"
+          );
+        },
+      }
+    );
   };
 
   return (
@@ -133,10 +138,10 @@ export default function SignInPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loginMutation.isPending}
             className="btn-gold w-full py-3 text-sm disabled:opacity-50"
           >
-            {loading ? "Signing In..." : "Sign In"}
+            {loginMutation.isPending ? "Signing In..." : "Sign In"}
           </button>
 
           <p className="text-center text-sm text-muted">
