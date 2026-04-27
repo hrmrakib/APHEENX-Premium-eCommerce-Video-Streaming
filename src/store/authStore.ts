@@ -2,17 +2,18 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface User {
-  id: string;
-  fullName: string;
+  id: number;
+  name: string;
   email: string;
-  verified: boolean;
-  role?: "user" | "admin";
+  is_email_verified: boolean;
+  created_at: string;
 }
 
 interface AuthState {
   user: User | null;
   token: string | null;
   isLoading: boolean;
+
   setLoading: (isLoading: boolean) => void;
   setAuth: (user: User, token: string) => void;
   updateUser: (user: Partial<User>) => void;
@@ -34,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ user: null, token: null }),
     }),
     {
-      name: "apheenx_auth", // name of the item in the storage (must be unique)
+      name: "apheenx_auth",
     },
   ),
 );

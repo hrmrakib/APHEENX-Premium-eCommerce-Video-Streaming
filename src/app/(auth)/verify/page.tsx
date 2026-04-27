@@ -1,21 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { verifyAccount, getPendingEmail } from "@/lib/auth";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useVerifyEmailMutation } from "@/queries/auth.queries";
 
 export default function VerifyPage() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+  const type = searchParams.get("type") || "";
   const router = useRouter();
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  const { mutateAsync: verifyEmail, isPending } = useVerifyEmailMutation();
+
   useEffect(() => {
-    const pendingEmail = getPendingEmail();
-    setEmail(pendingEmail);
     inputRefs.current[0]?.focus();
   }, []);
 
@@ -47,7 +49,10 @@ export default function VerifyPage() {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
     const newCode = [...code];
     for (let i = 0; i < pasted.length; i++) {
       newCode[i] = pasted[i];
@@ -57,27 +62,25 @@ export default function VerifyPage() {
     inputRefs.current[focusIdx]?.focus();
   };
 
-  const handleVerify = useCallback(() => {
-    const fullCode = code.join("");
+  const handleVerify = useCallback(async () => {
+    const fullCode = code.join("").trim();
+
     if (fullCode.length !== 6) {
       setError("Please enter all 6 digits");
       return;
     }
 
-    setLoading(true);
-    setError("");
+    try {
+      await verifyEmail({ email, otp: fullCode });
 
-    // Simulate verification delay
-    setTimeout(() => {
-      const result = verifyAccount(email);
-      if (result.success) {
-        router.push("/");
-      } else {
-        setError(result.message);
-        setLoading(false);
-      }
-    }, 800);
-  }, [code, email, router]);
+      router.push(type === "signup" ? "/signin" : "/");
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          "Verification failed. Please try again.",
+      );
+    }
+  }, [code, email, type, router, verifyEmail]);
 
   const handleResend = () => {
     setResendTimer(60);
@@ -86,57 +89,57 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="w-full max-w-md">
-      <div className="card-border p-8 bg-surface/50">
-        <h1 className="text-2xl font-bold text-center text-foreground">
+    <div className='w-full max-w-md'>
+      <div className='card-border p-8 bg-surface/50'>
+        <h1 className='text-2xl font-bold text-center text-foreground'>
           Enter Verification Code
         </h1>
-        <p className="mt-2 text-center text-sm text-muted">
+        <p className='mt-2 text-center text-sm text-muted'>
           We&apos;ve sent a 6-digit code to{" "}
-          <span className="text-gold">{email || "your email"}</span>
+          <span className='text-gold'>{email || "your email"}</span>
         </p>
 
         {error && (
-          <div className="mt-4 rounded-lg bg-danger/10 border border-danger/20 px-4 py-3 text-sm text-danger">
+          <div className='mt-4 rounded-lg bg-danger/10 border border-danger/20 px-4 py-3 text-sm text-danger'>
             {error}
           </div>
         )}
 
         {/* OTP Inputs */}
-        <div className="mt-8 flex justify-center gap-3" onPaste={handlePaste}>
+        <div className='mt-8 flex justify-center gap-3' onPaste={handlePaste}>
           {code.map((digit, i) => (
             <input
               key={i}
               ref={(el) => {
                 inputRefs.current[i] = el;
               }}
-              type="text"
-              inputMode="numeric"
+              type='text'
+              inputMode='numeric'
               maxLength={1}
               value={digit}
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
-              className="h-12 w-12 rounded-lg border border-border bg-transparent text-center text-lg font-semibold text-foreground outline-none transition-all focus:border-gold focus:shadow-[0_0_0_2px_rgba(212,168,67,0.1)]"
+              className='h-12 w-12 rounded-lg border border-border bg-transparent text-center text-lg font-semibold text-foreground outline-none transition-all focus:border-gold focus:shadow-[0_0_0_2px_rgba(212,168,67,0.1)]'
             />
           ))}
         </div>
 
         <button
           onClick={handleVerify}
-          disabled={loading}
-          className="btn-gold mt-8 w-full py-3 text-sm disabled:opacity-50"
+          disabled={isPending}
+          className='btn-gold mt-8 w-full py-3 text-sm disabled:opacity-50'
         >
-          {loading ? "Verifying..." : "Verify Your account"}
+          {isPending ? "Verifying..." : "Verify Your account"}
         </button>
 
-        <p className="mt-4 text-center text-sm text-muted">
+        <p className='mt-4 text-center text-sm text-muted'>
           Didn&apos;t received any code?{" "}
           {resendTimer > 0 ? (
-            <span className="text-gold">Resend in {resendTimer}s</span>
+            <span className='text-gold'>Resend in {resendTimer}s</span>
           ) : (
             <button
               onClick={handleResend}
-              className="text-gold hover:text-gold-light transition-colors"
+              className='text-gold hover:text-gold-light transition-colors'
             >
               Resend code
             </button>

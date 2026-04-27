@@ -1,74 +1,84 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRegisterMutation } from "@/queries/auth.queries";
-import { toast } from "sonner";
 
-export default function SignUpPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  const { mutateAsync: registerMutation, isPending } = useRegisterMutation();
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Validation
-    if (!fullName.trim()) {
-      setError("Full name is required");
+    if (!password) {
+      setError("Password is required");
       return;
     }
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Valid email is required");
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
       return;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    try {
-      await registerMutation({
-        name: fullName,
-        email,
-        password,
-        password_confirm: confirmPassword,
-      });
-
-      toast.success("Sign up successful. Please verify your email");
-      router.push(`/verify?email=${email}&type=signup`);
-    } catch (err: any) {
-      const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        "An error occurred during sign up";
-
-      setError(errorMessage);
-    }
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSuccess(true);
+      
+      // Redirect to login after successful reset
+      setTimeout(() => {
+        router.push("/signin");
+      }, 3000);
+    }, 1500);
   };
+
+  if (success) {
+    return (
+      <div className='w-full max-w-md'>
+        <div className='card-border p-8 bg-surface/50 text-center'>
+          <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/20'>
+            <svg className="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className='text-2xl font-bold text-foreground'>
+            Password Reset Successfully
+          </h1>
+          <p className='mt-2 text-sm text-muted'>
+            Your password has been updated. You will be redirected to the sign in page shortly.
+          </p>
+          <div className='mt-8'>
+            <Link href='/signin' className='btn-gold w-full py-3 text-sm inline-block text-center'>
+              Sign In Now
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='w-full max-w-md'>
       <div className='card-border p-8 bg-surface/50'>
         <h1 className='text-2xl font-bold text-center text-foreground'>
-          Create Account
+          Set New Password
         </h1>
         <p className='mt-2 text-center text-sm text-muted'>
-          Join the premium experience
+          Please enter your new password below.
         </p>
 
         <form onSubmit={handleSubmit} className='mt-8 space-y-5'>
@@ -78,72 +88,10 @@ export default function SignUpPage() {
             </div>
           )}
 
-          {/* Full Name */}
+          {/* New Password */}
           <div>
             <label className='block text-sm font-semibold text-foreground mb-2'>
-              Full Name
-            </label>
-            <div className='relative'>
-              <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted'>
-                <svg
-                  className='h-4 w-4'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='1.5'
-                    d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z'
-                  />
-                </svg>
-              </span>
-              <input
-                type='text'
-                placeholder='Full Name'
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className='input-field pl-8!'
-              />
-            </div>
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className='block text-sm font-semibold text-foreground mb-2'>
-              Email Address
-            </label>
-            <div className='relative'>
-              <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted'>
-                <svg
-                  className='h-4 w-4'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='1.5'
-                    d='M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75'
-                  />
-                </svg>
-              </span>
-              <input
-                type='email'
-                placeholder='Email Address'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className='input-field pl-8!'
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className='block text-sm font-semibold text-foreground mb-2'>
-              Enter Password
+              New Password
             </label>
             <div className='relative'>
               <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted'>
@@ -163,10 +111,11 @@ export default function SignUpPage() {
               </span>
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder='Enter your password'
+                placeholder='Enter new password'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className='input-field pl-8! pr-8!'
+                className='input-field pl-8! pr-10'
+                disabled={isSubmitting}
               />
               <button
                 type='button'
@@ -210,7 +159,7 @@ export default function SignUpPage() {
           {/* Confirm Password */}
           <div>
             <label className='block text-sm font-semibold text-foreground mb-2'>
-              Enter Password Again
+              Confirm Password
             </label>
             <div className='relative'>
               <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted'>
@@ -229,15 +178,16 @@ export default function SignUpPage() {
                 </svg>
               </span>
               <input
-                type={showConfirm ? "text" : "password"}
-                placeholder='Enter your password'
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder='Confirm new password'
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className='input-field pl-8! pr-8!'
+                className='input-field pl-8! pr-10'
+                disabled={isSubmitting}
               />
               <button
                 type='button'
-                onClick={() => setShowConfirm(!showConfirm)}
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className='absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors'
               >
                 <svg
@@ -246,7 +196,7 @@ export default function SignUpPage() {
                   stroke='currentColor'
                   viewBox='0 0 24 24'
                 >
-                  {showConfirm ? (
+                  {showConfirmPassword ? (
                     <path
                       strokeLinecap='round'
                       strokeLinejoin='round'
@@ -276,21 +226,11 @@ export default function SignUpPage() {
 
           <button
             type='submit'
-            disabled={isPending}
-            className='btn-gold w-full py-3 text-sm disabled:opacity-50'
+            disabled={isSubmitting}
+            className='btn-gold w-full py-3 text-sm disabled:opacity-50 mt-8'
           >
-            {isPending ? "Creating Account..." : "Sign Up"}
+            {isSubmitting ? "Resetting Password..." : "Reset Password"}
           </button>
-
-          <p className='text-center text-sm text-muted'>
-            Already have an account?{" "}
-            <Link
-              href='/signin'
-              className='text-gold hover:text-gold-light transition-colors'
-            >
-              Sign In
-            </Link>
-          </p>
         </form>
       </div>
     </div>

@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { getCartCount } from "@/lib/cart";
 
@@ -14,6 +14,7 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -97,7 +98,10 @@ export default function Navbar() {
           </div>
 
           {/* Cart */}
-          <button className='relative p-2 text-foreground/70 hover:text-foreground transition-colors'>
+          <button
+            onClick={() => router.push("/cart")}
+            className='relative p-2 text-foreground/70 hover:text-foreground transition-colors'
+          >
             <svg
               className='h-5 w-5'
               fill='none'
