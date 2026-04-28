@@ -31,9 +31,10 @@ export default function SignInPage() {
     try {
       const res = await loginMutation({ email, password });
 
+      console.log({ res });
+
       if (res?.token) {
         if (remember) {
-         
         }
         router.push("/");
       }

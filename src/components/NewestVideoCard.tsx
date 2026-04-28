@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { TVideo } from "@/types/video.types";
+import { TFeaturedVideo } from "@/types/video.types";
 
-export default function VideoCard({ video }: { video: TVideo }) {
+export default function NewestVideoCard({ video }: { video: TFeaturedVideo }) {
   const categoryColors: Record<string, string> = {
     entertainment: "bg-gold/80 text-black",
     tutorial: "bg-emerald-600/80 text-white",

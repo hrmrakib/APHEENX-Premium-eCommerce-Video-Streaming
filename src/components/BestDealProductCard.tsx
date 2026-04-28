@@ -2,9 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { TProduct } from "@/types/product.types";
+import { TBestDealProduct } from "@/types/product.types";
 
-export default function ProductCard({ product }: { product: TProduct }) {
+export default function BestDealProductCard({
+  product,
+}: {
+  product: TBestDealProduct;
+}) {
   const discountPercent = product.price_off
     ? Math.round(
         (parseFloat(product.price_off) / parseFloat(product.price)) * 100,
@@ -17,7 +21,7 @@ export default function ProductCard({ product }: { product: TProduct }) {
         {/* Image */}
         <div className='relative h-64 overflow-hidden bg-surface'>
           <Image
-            src={product.primary_image}
+            src={product.images[0]?.image ?? "/images/product-placeholder.jpg"}
             alt={product.name}
             fill
             unoptimized

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Image from "next/image";
@@ -5,18 +6,54 @@ import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
-import { products, videos } from "@/lib/data";
+import {
+  useGetBestDealsQuery,
+  useProductsQuery,
+} from "@/queries/products.query";
+import { TBestDealProduct, TProduct } from "@/types/product.types";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
+import {
+  useGetMostViewedVideosQuery,
+  useGetNewestVideosQuery,
+  useVideosQuery,
+} from "@/queries/videos.query";
+import { TVideo } from "@/types/video.types";
+import BestDealProductCard from "@/components/BestDealProductCard";
+import NewestVideoCard from "@/components/NewestVideoCard";
 
 export default function HomePage() {
-  const featuredProducts = products.filter((p) => p.tags.includes("featured"));
-  const bestDeals = products.filter((p) => p.tags.includes("best-deal"));
+  const { data: featuredVideosData, isPending: featuredVideosPending } =
+    useVideosQuery({
+      is_featured: true,
+    });
+  const { data: featuredProductsData, isPending: featuredProductsPending } =
+    useProductsQuery({
+      is_featured: true,
+    });
+
+  const { data: bestDealsData, isPending: bestDealsPending } =
+    useGetBestDealsQuery({
+      is_featured: true,
+    });
+  const { data: newestVideosData, isPending: newestVideosPending } =
+    useGetNewestVideosQuery();
+  const { data: mostViewedVideosData, isPending: mostViewedVideosPending } =
+    useGetMostViewedVideosQuery();
+
+  const featuredProducts = featuredProductsData?.data ?? [];
+  const featuredVideos = featuredVideosData?.data ?? [];
+  const bestDeals = bestDealsData?.data ?? [];
+  const newestVideos = newestVideosData?.data ?? [];
+  const mostViewedVideos = mostViewedVideosData?.data ?? [];
+
+  console.log({ newestVideos, mostViewedVideos });
 
   return (
     <div>
       {/* Hero Section */}
       <section className='relative overflow-hidden'>
         <div className='mx-auto container px-4 lg:px-8'>
-          <div className='relative flex min-h-[500px] items-center py-16 md:min-h-[600px]'>
+          <div className='relative flex min-h-125 items-center py-16 md:min-h-150'>
             {/* Background Image */}
             <div className='absolute inset-0 z-0'>
               <Image
@@ -27,8 +64,8 @@ export default function HomePage() {
                 priority
                 sizes='100vw'
               />
-              <div className='absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent rounded-2xl' />
-              <div className='absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent rounded-2xl' />
+              <div className='absolute inset-0 bg-linear-to-r from-background via-background/80 to-transparent rounded-2xl' />
+              <div className='absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent rounded-2xl' />
             </div>
 
             {/* Content */}
@@ -103,11 +140,16 @@ export default function HomePage() {
 
       {/* Featured Videos */}
       <section className='mx-auto container px-4 py-12 lg:px-8'>
-        <SectionHeader title='Featured Videos' href='#' />
+        <SectionHeader title='Featured Videos' href='/video' />
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {videos.map((video) => (
-            <VideoCard key={video.id} video={video} />
-          ))}
+          {featuredVideosPending &&
+            Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          {!featuredVideosPending &&
+            featuredVideos.map((video: TVideo) => (
+              <VideoCard key={video.id} video={video} />
+            ))}
         </div>
       </section>
 
@@ -115,9 +157,15 @@ export default function HomePage() {
       <section className='mx-auto container px-4 py-12 lg:px-8'>
         <SectionHeader title='Featured Products' href='/shop' />
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {featuredProductsPending &&
+            Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+
+          {!featuredProductsPending &&
+            featuredProducts.map((product: TProduct) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
         </div>
       </section>
 
@@ -125,7 +173,12 @@ export default function HomePage() {
       <section className='mx-auto container px-4 py-12 lg:px-8'>
         <SectionHeader title='Best Viewed Videos' href='#' />
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {videos.map((video) => (
+          {mostViewedVideosPending &&
+            Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+
+          {mostViewedVideos.map((video: TVideo) => (
             <VideoCard key={`best-${video.id}`} video={video} />
           ))}
         </div>
@@ -135,9 +188,17 @@ export default function HomePage() {
       <section className='mx-auto container px-4 py-12 lg:px-8'>
         <SectionHeader title='Best Deals' href='/shop' />
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {bestDeals.slice(0, 3).map((product) => (
-            <ProductCard key={`deal-${product.id}`} product={product} />
-          ))}
+          {bestDealsPending &&
+            Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          {!bestDealsPending &&
+            bestDeals.map((product: TBestDealProduct) => (
+              <BestDealProductCard
+                key={`deal-${product.id}`}
+                product={product}
+              />
+            ))}
         </div>
       </section>
 
@@ -145,9 +206,15 @@ export default function HomePage() {
       <section className='mx-auto container px-4 pb-16 pt-12 lg:px-8'>
         <SectionHeader title='Newest Videos' href='#' />
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {videos.map((video) => (
-            <VideoCard key={`new-${video.id}`} video={video} />
-          ))}
+          {newestVideosPending &&
+            Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+
+          {!newestVideosPending &&
+            newestVideos.map((video: TVideo) => (
+              <NewestVideoCard key={video.id} video={video} />
+            ))}
         </div>
       </section>
     </div>

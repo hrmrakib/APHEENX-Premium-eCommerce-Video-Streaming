@@ -10,7 +10,8 @@ export default function ForgotPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  const { mutateAsync: forgotPasswordMutation } = useForgotPasswordMutation();
+  const { mutateAsync: forgotPasswordMutation, isPending } =
+    useForgotPasswordMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +24,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const res = await forgotPasswordMutation({ email });
+      
     } catch (error) {}
   };
 

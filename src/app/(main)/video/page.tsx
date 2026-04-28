@@ -97,9 +97,9 @@ export default function VideoPage() {
       {/* Video Grid */}
       {filteredVideos.length > 0 ? (
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {filteredVideos.map((video) => (
+          {/* {filteredVideos.map((video) => (
             <VideoCard key={video.id} video={video} />
-          ))}
+          ))} */}
         </div>
       ) : (
         <div className='flex flex-col items-center justify-center py-20 text-center'>
