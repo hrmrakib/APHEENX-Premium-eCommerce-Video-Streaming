@@ -31,13 +31,22 @@ export const useGetBestDealsQuery = (params: Record<string, any>) => {
 };
 
 export const useProductQuery = (id: string) => {
-  const axiosSecure = useAxiosSecure();
   return useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
-      const { data } = await axiosSecure.get(`/product/${id}`);
+      const { data } = await axiosPublic.get(`/products/${id}`);
       return data;
     },
     enabled: !!id,
+  });
+};
+
+export const useGetProductCategoriesQuery = () => {
+  return useQuery({
+    queryKey: ["product"],
+    queryFn: async () => {
+      const { data } = await axiosPublic.get("/product-categories/");
+      return data;
+    },
   });
 };

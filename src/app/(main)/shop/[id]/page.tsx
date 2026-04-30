@@ -1,41 +1,57 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import SectionHeader from "@/components/SectionHeader";
-import { getProductById, getRelatedProducts } from "@/lib/data";
-import { addToCart } from "@/lib/cart";
-import { toggleWishlist, isInWishlist } from "@/lib/wishlist";
-import type { Product } from "@/lib/data";
+import { useProductQuery } from "@/queries/products.query";
 
-export default function ShopDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export interface Product {
+  id: number;
+  images: {
+    image: string;
+  }[];
+  category_name: string;
+  category: number;
+  discounted_price: number;
+  related_products: {
+    id: number;
+    name: string;
+    slug: string;
+    description: string;
+    price_off: string | null;
+    price: string;
+    discounted_price: number;
+    primary_image: string;
+    stock: number;
+    is_featured: boolean;
+  }[];
+  name: string;
+  slug: string;
+  description: string;
+  price: string;
+  stock: number;
+  price_off: string | null;
+  status: string;
+  is_featured: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export default function ShopDetailPage() {
+  const id = useParams().id as string;
   const router = useRouter();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [related, setRelated] = useState<Product[]>([]);
   const [currentImage, setCurrentImage] = useState(0);
   const [inWishlist, setInWishlist] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  useEffect(() => {
-    const p = getProductById(id);
-    if (p) {
-      setProduct(p);
-      setRelated(getRelatedProducts(id));
-      setInWishlist(isInWishlist(id));
-      setCurrentImage(0);
-    }
-  }, [id]);
+  const { data: productData } = useProductQuery(id);
+  const product = productData?.data as Product;
 
   if (!product) {
     return (
-      <div className='flex items-center justify-center min-h-[400px]'>
+      <div className='flex items-center justify-center min-h-100'>
         <div className='text-center'>
           <p className='text-muted text-lg'>Product not found</p>
           <button
@@ -49,21 +65,22 @@ export default function ShopDetailPage({
     );
   }
 
+  // ✅ Derived values from actual API shape
+  const price = parseFloat(product.price);
+  const originalPrice = product.price_off
+    ? price + parseFloat(product.price_off)
+    : null;
+  const related = product.related_products ?? [];
+
   const handleAddToCart = () => {
-    addToCart(product.id);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  const handleBuyNow = () => {
-    addToCart(product.id);
-    // In a real app, navigate to checkout
-    alert("Redirecting to checkout...");
-  };
+  const handleBuyNow = () => {};
 
   const handleToggleWishlist = () => {
-    const added = toggleWishlist(product.id);
-    setInWishlist(added);
+    setInWishlist((prev) => !prev);
   };
 
   const prevImage = () => {
@@ -86,9 +103,10 @@ export default function ShopDetailPage({
         <div className='relative'>
           <div className='relative aspect-square overflow-hidden rounded-xl bg-surface border border-border'>
             <Image
-              src={product.images[currentImage]}
+              src={product.images[currentImage].image} 
               alt={product.name}
               fill
+              unoptimized
               className='object-cover'
               sizes='(max-width: 1024px) 100vw, 50vw'
               priority
@@ -162,8 +180,7 @@ export default function ShopDetailPage({
         <div className='flex flex-col'>
           {/* Category badge */}
           <span className='inline-block w-fit rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-xs font-medium text-gold'>
-            {product.category.charAt(0).toUpperCase() +
-              product.category.slice(1)}
+            {product.category_name}
           </span>
 
           <h1 className='mt-3 text-2xl font-bold text-gold italic md:text-3xl'>
@@ -173,11 +190,11 @@ export default function ShopDetailPage({
           {/* Price */}
           <div className='mt-3 flex items-baseline gap-3'>
             <span className='text-2xl font-bold text-gold'>
-              ${product.price.toFixed(2)}
+              ${price.toFixed(2)} {/* ✅ parsed float */}
             </span>
-            {product.originalPrice && (
+            {originalPrice && (
               <span className='text-base text-muted line-through'>
-                ${product.originalPrice.toFixed(2)}
+                ${originalPrice.toFixed(2)} {/* ✅ derived from price_off */}
               </span>
             )}
           </div>
@@ -276,12 +293,12 @@ export default function ShopDetailPage({
       </div>
 
       {/* Related Products */}
-      {related.length > 0 && (
+      {related.length > 0 && ( // ✅ uses product.related_products
         <section className='mt-16'>
           <SectionHeader title='You may also like' href='/shop' />
           <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-            {related.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {related.map((relatedProduct) => (
+              <ProductCard key={relatedProduct.id} product={relatedProduct} />
             ))}
           </div>
         </section>

@@ -1,9 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/lib/data";
+import {
+  useGetProductCategoriesQuery,
+  useProductsQuery,
+} from "@/queries/products.query";
+import { TProduct } from "@/types/product.types";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
+import { useDebounce } from "@/hooks/useDebounce";
 
+type TCategory = {
+  id: string;
+  name: string;
+  slug: string;
+};
 const categories = [
   { value: "all", label: "All Products" },
   { value: "accessories", label: "Accessories" },
@@ -12,29 +23,37 @@ const categories = [
 
 const tabs = [
   { value: "featured", label: "Featured Products", icon: "✦" },
-  { value: "most-buying", label: "Most Buying", icon: "↗" },
-  { value: "best-deal", label: "Best Deal", icon: "%" },
+  { value: "most_buying", label: "Most Buying", icon: "↗" },
+  { value: "price_off", label: "Best Deal", icon: "%" },
 ];
+
+type FilterTab = "featured" | "price_off" | "most_buying" | null;
+
+const tabFilters: Record<string, object> = {
+  featured: { is_featured: true },
+  price_off: { price_off__gt: 0 },
+  most_buying: { most_buying: true },
+};
 
 export default function ShopPage() {
   const [category, setCategory] = useState("all");
-  const [activeTab, setActiveTab] = useState("featured");
+  const [activeTab, setActiveTab] = useState<FilterTab>(null);
+  const [search, setSearch] = useState("");
+  const searchQuery = useDebounce(search);
 
-  const filteredProducts = useMemo(() => {
-    let result = products;
+  const { data: productsData, isFetching } = useProductsQuery({
+    search: searchQuery,
+    ...(activeTab ? tabFilters[activeTab] : {}),
+    category__slug: category === "all" ? null : category,
+  });
 
-    // Filter by category
-    if (category !== "all") {
-      result = result.filter((p) => p.category === category);
-    }
+  const { data: categoriesData } = useGetProductCategoriesQuery();
 
-    // Filter by tab
-    if (activeTab !== "all") {
-      result = result.filter((p) => p.tags.includes(activeTab));
-    }
-
-    return result;
-  }, [category, activeTab]);
+  const products = productsData?.data || [];
+  const categories: TCategory[] = [
+    { id: "all", name: "All Products", slug: "all" },
+    ...(categoriesData?.data || []),
+  ];
 
   return (
     <div className='mx-auto container px-4 py-8 lg:px-8'>
@@ -48,26 +67,39 @@ export default function ShopPage() {
 
       {/* Filters */}
       <div className='mb-8 space-y-4'>
-        {/* Category dropdown */}
-        <div>
-          <label className='block text-sm font-medium text-foreground mb-2'>
-            Categories
-          </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="input-field w-auto min-w-[180px] cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23888%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22m19.5%208.25-7.5%207.5-7.5-7.5%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_12px_center] bg-no-repeat pr-10"
-          >
-            {categories.map((cat) => (
-              <option
-                key={cat.value}
-                value={cat.value}
-                className='bg-surface text-foreground'
-              >
-                {cat.label}
-              </option>
-            ))}
-          </select>
+        <div className='flex items-center gap-6 mb-8'>
+          {/* Category dropdown */}
+          <div>
+            <label className='block text-sm font-medium text-foreground mb-2'>
+              Categories
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="input-field w-auto min-w-45 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23888%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22m19.5%208.25-7.5%207.5-7.5-7.5%22%2F%3E%3C%2Fsvg%3E')] bg-size-[16px] bg-position-[right_12px_center] bg-no-repeat pr-10"
+            >
+              {categories.map((cat: TCategory) => (
+                <option
+                  key={cat.id}
+                  value={cat.slug}
+                  className='bg-surface text-foreground'
+                >
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Search */}
+          <div className='flex-1 ml-4 mt-6'>
+            <input
+              type='text'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder='Search products...'
+              className='input-field'
+            />
+          </div>
         </div>
 
         {/* Tab filters */}
@@ -75,7 +107,13 @@ export default function ShopPage() {
           {tabs.map((tab) => (
             <button
               key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
+              onClick={() =>
+                setActiveTab(
+                  activeTab === (tab.value as FilterTab)
+                    ? null
+                    : (tab.value as FilterTab),
+                )
+              }
               className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                 activeTab === tab.value
                   ? "gold-gradient text-black shadow-lg shadow-gold/20"
@@ -90,9 +128,14 @@ export default function ShopPage() {
       </div>
 
       {/* Product Grid */}
-      {filteredProducts.length > 0 ? (
+      {products.length > 0 ? (
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {filteredProducts.map((product) => (
+          {isFetching &&
+            Array.from({ length: 9 }).map((_, index) => (
+              <ProductCardSkeleton key={index} />
+            ))}
+
+          {products.map((product: TProduct) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
