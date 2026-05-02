@@ -140,7 +140,9 @@ export default function HomePage() {
 
       {/* Featured Videos */}
       <section className='mx-auto container px-4 py-12 lg:px-8'>
-        <SectionHeader title='Featured Videos' href='/video' />
+        {featuredVideos?.length > 0 && (
+          <SectionHeader title='Featured Videos' href='/video' />
+        )}
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {featuredVideosPending &&
             Array.from({ length: 8 }).map((_, i) => (
@@ -155,7 +157,9 @@ export default function HomePage() {
 
       {/* Featured Products */}
       <section className='mx-auto container px-4 py-12 lg:px-8'>
-        <SectionHeader title='Featured Products' href='/shop' />
+        {featuredProducts?.length > 0 && (
+          <SectionHeader title='Featured Products' href='/shop' />
+        )}
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {featuredProductsPending &&
             Array.from({ length: 8 }).map((_, i) => (
@@ -171,7 +175,9 @@ export default function HomePage() {
 
       {/* Best Viewed Videos */}
       <section className='mx-auto container px-4 py-12 lg:px-8'>
-        <SectionHeader title='Best Viewed Videos' href='#' />
+        {mostViewedVideos?.length > 0 && (
+          <SectionHeader title='Best Viewed Videos' href='#' />
+        )}
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {mostViewedVideosPending &&
             Array.from({ length: 8 }).map((_, i) => (
@@ -186,7 +192,9 @@ export default function HomePage() {
 
       {/* Best Deals */}
       <section className='mx-auto container px-4 py-12 lg:px-8'>
-        <SectionHeader title='Best Deals' href='/shop' />
+        {bestDeals?.length > 0 && (
+          <SectionHeader title='Best Deals' href='/shop' />
+        )}
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {bestDealsPending &&
             Array.from({ length: 8 }).map((_, i) => (
@@ -204,7 +212,9 @@ export default function HomePage() {
 
       {/* Newest Videos */}
       <section className='mx-auto container px-4 pb-16 pt-12 lg:px-8'>
-        <SectionHeader title='Newest Videos' href='#' />
+        {newestVideos?.length > 0 && (
+          <SectionHeader title='Newest Videos' href='#' />
+        )}
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {newestVideosPending &&
             Array.from({ length: 8 }).map((_, i) => (

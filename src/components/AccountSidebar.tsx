@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { getCurrentUser, signout } from "@/lib/auth";
-import { useEffect, useState } from "react";
+import { signout } from "@/lib/auth";
+import { useState } from "react";
 
 const menuItems = [
   { label: "Dashboard", href: "/account", icon: "user" },
@@ -84,9 +84,13 @@ const icons: Record<string, React.ReactNode> = {
 export default function AccountSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<{ fullName: string; email: string } | null>(
-    null,
-  );
+  // const [user, setUser] = useState<{ fullName: string; email: string } | null>(
+  //   null,
+  // );
+  const [user, setUser] = useState<{ fullName: string; email: string } | null>({
+    fullName: "John Doe",
+    email: "john.doe@example.com",
+  });
 
   // useEffect(() => {
   //   const u = getCurrentUser();
@@ -102,7 +106,7 @@ export default function AccountSidebar() {
     router.push("/signin");
   };
 
-  if (!user) return null;
+  // if (!user) return null;
 
   return (
     <aside className='w-full lg:w-64 shrink-0'>
@@ -110,13 +114,13 @@ export default function AccountSidebar() {
         {/* User Info */}
         <div className='flex items-center gap-3 pb-4 border-b border-border'>
           <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gold/20 text-gold text-sm font-bold'>
-            {user.fullName.charAt(0).toUpperCase()}
+            {user!.fullName.charAt(0).toUpperCase()}
           </div>
           <div className='min-w-0'>
             <p className='text-sm font-semibold text-foreground truncate'>
-              {user.fullName}
+              {user!.fullName}
             </p>
-            <p className='text-xs text-muted truncate'>{user.email}</p>
+            <p className='text-xs text-muted truncate'>{user!.email}</p>
           </div>
         </div>
 
