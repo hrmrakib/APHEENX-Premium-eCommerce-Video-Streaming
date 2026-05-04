@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import ProductCard from "@/components/ProductCard";
-import {
-  useGetProductCategoriesQuery,
-  useProductsQuery,
-} from "@/queries/products.query";
+
 import { TProduct } from "@/types/product.types";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { useDebounce } from "@/hooks/useDebounce";
+import {
+  useGetProductCategoriesQuery,
+  useGetProductsQuery,
+} from "@/redux/features/product/productAPI";
 
 type TCategory = {
   id: string;
@@ -41,13 +42,13 @@ export default function ShopPage() {
   const [search, setSearch] = useState("");
   const searchQuery = useDebounce(search);
 
-  const { data: productsData, isFetching } = useProductsQuery({
+  const { data: productsData, isFetching } = useGetProductsQuery({
     search: searchQuery,
     ...(activeTab ? tabFilters[activeTab] : {}),
     category__slug: category === "all" ? null : category,
   });
 
-  const { data: categoriesData } = useGetProductCategoriesQuery();
+  const { data: categoriesData } = useGetProductCategoriesQuery({});
 
   const products = productsData?.data || [];
   const categories: TCategory[] = [

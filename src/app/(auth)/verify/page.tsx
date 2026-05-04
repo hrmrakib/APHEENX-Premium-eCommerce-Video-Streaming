@@ -3,7 +3,12 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useVerifyEmailMutation } from "@/queries/auth.queries";
+
+import { toast } from "sonner";
+import {
+  useResendOtpMutation,
+  useVerifyEmailMutation,
+} from "@/redux/features/auth/authAPI";
 
 export default function VerifyPage() {
   const searchParams = useSearchParams();
@@ -15,7 +20,8 @@ export default function VerifyPage() {
   const [resendTimer, setResendTimer] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const { mutateAsync: verifyEmail, isPending } = useVerifyEmailMutation();
+  const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
+  const [resendEmail, { isLoading: isResending }] = useResendOtpMutation();
 
   useEffect(() => {
     inputRefs.current[0]?.focus();
@@ -82,7 +88,21 @@ export default function VerifyPage() {
     }
   }, [code, email, type, router, verifyEmail]);
 
-  const handleResend = () => {
+  const handleResend = async () => {
+    try {
+      const res = await resendEmail({
+        email,
+        purpose: "email_verification",
+      }).unwrap();
+
+      console.log({ res });
+      if (res?.message) {
+        toast.success(res.message || "OTP Resent successfully");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
     setResendTimer(60);
     setCode(["", "", "", "", "", ""]);
     inputRefs.current[0]?.focus();
@@ -126,10 +146,10 @@ export default function VerifyPage() {
 
         <button
           onClick={handleVerify}
-          disabled={isPending}
+          disabled={isVerifying || isResending}
           className='btn-gold mt-8 w-full py-3 text-sm disabled:opacity-50'
         >
-          {isPending ? "Verifying..." : "Verify Your account"}
+          {isVerifying ? "Verifying..." : "Verify Your account"}
         </button>
 
         <p className='mt-4 text-center text-sm text-muted'>

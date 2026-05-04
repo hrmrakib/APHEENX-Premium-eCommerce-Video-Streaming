@@ -4,8 +4,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRegisterMutation } from "@/queries/auth.queries";
 import { toast } from "sonner";
+import { useRegisterMutation } from "@/redux/features/auth/authAPI";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function SignUpPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
 
-  const { mutateAsync: registerMutation, isPending } = useRegisterMutation();
+  const [registerMutation, { isLoading }] = useRegisterMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,10 +276,10 @@ export default function SignUpPage() {
 
           <button
             type='submit'
-            disabled={isPending}
+            disabled={isLoading}
             className='btn-gold w-full py-3 text-sm disabled:opacity-50'
           >
-            {isPending ? "Creating Account..." : "Sign Up"}
+            {isLoading ? "Creating Account..." : "Sign Up"}
           </button>
 
           <p className='text-center text-sm text-muted'>

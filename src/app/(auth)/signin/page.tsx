@@ -4,7 +4,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLoginMutation } from "@/queries/auth.queries";
+import { useDispatch } from "react-redux";
+import { setUser, userTrack } from "@/redux/features/auth/authSlice";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -13,35 +14,60 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
-  const { mutateAsync: loginMutation, isPending } = useLoginMutation();
+  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Valid email is required");
-      return;
-    }
-    if (!password) {
-      setError("Password is required");
-      return;
-    }
 
     try {
-      const res = await loginMutation({ email, password });
+      setIsLoading(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        },
+      );
 
-      console.log({ res });
+      // Parse the full JSON response
+      const result = await response.json();
 
-      if (res?.token) {
-        if (remember) {
+      console.log(result);
+
+      if (response?.ok) {
+        dispatch(userTrack());
+        dispatch(
+          setUser({
+            user: result?.data?.user,
+            token: result?.data?.access,
+          }),
+        );
+
+        // According to your backend response, the data is nested in 'data'
+        if (response.ok && result.data?.access) {
+          const { access } = result.data;
+
+          // Store the token
+          localStorage.setItem("access_token", access);
+          console.log("Token stored successfully");
+
+          // Redirect using your router
+          router.push("/");
         }
-        router.push("/");
+      } else {
+        // Handle backend validation errors (e.g., result.message)
+        console.error("Login failed:", result.message || "Unknown error");
       }
-
-      console.log({ res });
     } catch (error) {
-      console.log(error);
+      // Handle network errors
+      console.error("Network error:", error);
+      setError("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -181,10 +207,10 @@ export default function SignInPage() {
 
           <button
             type='submit'
-            disabled={isPending}
+            disabled={isLoading}
             className='btn-gold w-full py-3 text-sm disabled:opacity-50'
           >
-            {isPending ? "Signing In..." : "Sign In"}
+            {isLoading ? "Signing In..." : "Sign In"}
           </button>
 
           <p className='text-center text-sm text-muted'>

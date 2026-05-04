@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import TanStackProviders from "@/providers/TanStackProviders";
 import { Toaster } from "sonner";
+import Providers from "@/redux/features/Providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,11 +24,11 @@ export default function RootLayout({
   return (
     <html lang='en' className={`${inter.variable} h-full antialiased`}>
       <body className='min-h-full flex flex-col bg-background text-foreground'>
-        <TanStackProviders>
+        <Providers>
           <Toaster />
 
           {children}
-        </TanStackProviders>
+        </Providers>
       </body>
     </html>
   );

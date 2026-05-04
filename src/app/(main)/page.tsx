@@ -6,47 +6,47 @@ import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
-import {
-  useGetBestDealsQuery,
-  useProductsQuery,
-} from "@/queries/products.query";
+
 import { TBestDealProduct, TProduct } from "@/types/product.types";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
-import {
-  useGetMostViewedVideosQuery,
-  useGetNewestVideosQuery,
-  useVideosQuery,
-} from "@/queries/videos.query";
+
 import { TVideo } from "@/types/video.types";
 import BestDealProductCard from "@/components/BestDealProductCard";
 import NewestVideoCard from "@/components/NewestVideoCard";
+import {
+  useGetMostViewedVideosQuery,
+  useGetNewestVideosQuery,
+  useGetVideosQuery,
+} from "@/redux/features/video/videoAPI";
+import {
+  useGetBestDealsQuery,
+  useGetProductsQuery,
+} from "@/redux/features/product/productAPI";
 
 export default function HomePage() {
-  const { data: featuredVideosData, isPending: featuredVideosPending } =
-    useVideosQuery({
+  const { data: featuredVideosData, isLoading: featuredVideosPending } =
+    useGetVideosQuery({
       is_featured: true,
     });
-  const { data: featuredProductsData, isPending: featuredProductsPending } =
-    useProductsQuery({
+  const { data: featuredProductsData, isLoading: featuredProductsPending } =
+    useGetProductsQuery({
       is_featured: true,
     });
 
-  const { data: bestDealsData, isPending: bestDealsPending } =
+  const { data: bestDealsData, isLoading: bestDealsPending } =
     useGetBestDealsQuery({
       is_featured: true,
     });
-  const { data: newestVideosData, isPending: newestVideosPending } =
-    useGetNewestVideosQuery();
-  const { data: mostViewedVideosData, isPending: mostViewedVideosPending } =
-    useGetMostViewedVideosQuery();
+  const { data: newestVideosData, isLoading: newestVideosPending } =
+    useGetNewestVideosQuery({});
+  const { data: mostViewedVideosData, isLoading: mostViewedVideosPending } =
+    useGetMostViewedVideosQuery({});
 
   const featuredProducts = featuredProductsData?.data ?? [];
   const featuredVideos = featuredVideosData?.data ?? [];
   const bestDeals = bestDealsData?.data ?? [];
   const newestVideos = newestVideosData?.data ?? [];
   const mostViewedVideos = mostViewedVideosData?.data ?? [];
-
-  console.log({ newestVideos, mostViewedVideos });
 
   return (
     <div>
