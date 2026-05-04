@@ -3,7 +3,7 @@ export type TProduct = {
   name: string;
   slug: string;
   description: string;
-  price_off: string;
+  price_off: string | null;
   price: string;
   discounted_price: number;
   primary_image: string;
@@ -24,7 +24,7 @@ export type TProductDetail = {
   description: string;
   price: string;
   stock: number;
-  price_off: string;
+  price_off: string | null;
   status: "active" | "inactive" | "draft";
   is_featured: boolean;
   created_at: string;

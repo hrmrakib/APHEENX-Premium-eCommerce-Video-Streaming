@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { getCartCount } from "@/lib/cart";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -19,6 +20,11 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { user, token, profileLoading } = useAuth();
+  // const user = useSelector((state: RootState) => state.auth.user);
+
+  // console.log({ user, token, profileLoading });
 
   const updateCartCount = useCallback(() => {
     setCartCount(getCartCount());
@@ -124,7 +130,7 @@ export default function Navbar() {
 
           {/* User */}
           <Link
-            href='/signin'
+            href={user ? "/account" : "/signin"}
             className='p-2 text-foreground/70 hover:text-foreground transition-colors'
           >
             <svg

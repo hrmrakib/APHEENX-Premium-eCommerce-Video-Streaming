@@ -11,7 +11,7 @@ export default function VideoCard({ video }: { video: TVideo }) {
   };
 
   return (
-    <Link href={`/video/${video.id}`} className='group block'>
+    <Link href={`/video/${video.slug}`} className='group block'>
       <div className='overflow-hidden rounded-xl bg-surface-light border border-border transition-all duration-300 group-hover:border-gold/30 group-hover:shadow-lg group-hover:shadow-gold/5'>
         {/* Thumbnail / Trailer */}
         <div className='relative aspect-video overflow-hidden bg-surface'>

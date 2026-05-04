@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import Providers from "@/redux/features/Providers";
+import AppInitializer from "@/components/AppInitializer/AppInitializer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -25,9 +26,11 @@ export default function RootLayout({
     <html lang='en' className={`${inter.variable} h-full antialiased`}>
       <body className='min-h-full flex flex-col bg-background text-foreground'>
         <Providers>
-          <Toaster />
+          <AppInitializer>
+            <Toaster />
 
-          {children}
+            {children}
+          </AppInitializer>
         </Providers>
       </body>
     </html>

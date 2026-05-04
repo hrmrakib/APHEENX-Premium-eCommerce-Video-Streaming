@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import SectionHeader from "@/components/SectionHeader";
-import { useProductQuery } from "@/queries/products.query";
+import { useGetProductByIdQuery } from "@/redux/features/product/productAPI";
 
 export interface Product {
   id: number;
@@ -46,7 +46,7 @@ export default function ShopDetailPage() {
   const [inWishlist, setInWishlist] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const { data: productData } = useProductQuery(id);
+  const { data: productData } = useGetProductByIdQuery(id);
   const product = productData?.data as Product;
 
   if (!product) {

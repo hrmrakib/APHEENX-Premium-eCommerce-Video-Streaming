@@ -45,16 +45,19 @@ export default function ShopPage() {
   const { data: productsData, isFetching } = useGetProductsQuery({
     search: searchQuery,
     ...(activeTab ? tabFilters[activeTab] : {}),
-    category__slug: category === "all" ? null : category,
+    category__slug: category === "all" ? undefined : category,
   });
 
   const { data: categoriesData } = useGetProductCategoriesQuery({});
 
   const products = productsData?.data || [];
+
   const categories: TCategory[] = [
     { id: "all", name: "All Products", slug: "all" },
     ...(categoriesData?.data || []),
   ];
+
+  console.log(products);
 
   return (
     <div className='mx-auto container px-4 py-8 lg:px-8'>

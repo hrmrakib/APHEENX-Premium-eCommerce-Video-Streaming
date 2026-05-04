@@ -15,8 +15,12 @@ export const videoAPI = baseAPI.injectEndpoints({
 
     // 2. Get Single Video (Secure/Public)
     getVideoById: builder.query({
-      query: (id) => `/video/${id}`,
+      query: (id) => `/videos/${id}`,
       providesTags: (result, error, id) => [{ type: "Video", id }],
+    }),
+
+    getVideosCategories: builder.query({
+      query: () => "/video-categories/",
     }),
 
     // 3. Get Newest Videos
@@ -48,6 +52,7 @@ export const videoAPI = baseAPI.injectEndpoints({
 export const {
   useGetVideosQuery,
   useGetVideoByIdQuery,
+  useGetVideosCategoriesQuery,
   useGetNewestVideosQuery,
   useGetMostViewedVideosQuery,
   useAddVideoMutation,
