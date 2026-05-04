@@ -6,24 +6,22 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
-import { useGetVideoByIdQuery } from "@/redux/features/video/videoAPI";
+import {
+  useGetVideoByIdQuery,
+  useGetVideoStreamQuery,
+} from "@/redux/features/video/videoAPI";
 import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 
 export default function VideoDetailPage() {
   const params = useParams().id as string;
   const [showPayment, setShowPayment] = useState(false);
 
-  const {
-    wishlistItems,
-    toggleWishlist,
-    removeFromWishlist,
-    isInWishlist,
-    clearWishlist,
-  } = useVideoWishlist();
-
+  const { toggleWishlist, isInWishlist } = useVideoWishlist();
   const { data: videoData, isLoading, isError } = useGetVideoByIdQuery(params);
-
   const video = videoData?.data;
+  const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id);
+
+  console.log({ getVideoStreamData });
 
   if (isLoading) {
     return (

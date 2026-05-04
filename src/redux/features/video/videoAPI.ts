@@ -13,6 +13,13 @@ export const videoAPI = baseAPI.injectEndpoints({
       providesTags: ["Video"],
     }),
 
+    getVideoStream: builder.query({
+      query: (id) => ({
+        url: `/videos/${id}/stream/`,
+        responseHandler: (response: Response) => response.blob(),
+      }),
+    }),
+
     // 2. Get Single Video (Secure/Public)
     getVideoById: builder.query({
       query: (id) => `/videos/${id}`,
@@ -51,6 +58,7 @@ export const videoAPI = baseAPI.injectEndpoints({
 // Export hooks
 export const {
   useGetVideosQuery,
+  useGetVideoStreamQuery,
   useGetVideoByIdQuery,
   useGetVideosCategoriesQuery,
   useGetNewestVideosQuery,
