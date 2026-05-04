@@ -17,7 +17,7 @@ export default function ProductCard({ product }: { product: TProduct }) {
         {/* Image */}
         <div className='relative h-64 overflow-hidden bg-surface'>
           <Image
-            src={product.primary_image}
+            src={product?.primary_image as string}
             alt={product.name}
             fill
             unoptimized

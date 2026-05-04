@@ -1,41 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getWishlist, removeFromWishlist } from "@/lib/wishlist";
 import { addToCart } from "@/lib/cart";
-import { products, videos } from "@/lib/data";
-import type { Product, Video } from "@/lib/data";
+import type { Video } from "@/lib/data";
+import { useProductWishlist } from "@/hooks/useProductWishlist";
 
 export default function WishlistPage() {
-  const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
-  const [wishlistVideos, setWishlistVideos] = useState<Video[]>([]);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
 
-  const loadWishlist = useCallback(() => {
-    const ids = getWishlist();
-    const prods = products.filter((p) => ids.includes(p.id));
-    const vids = videos.filter((v) => ids.includes(`video-${v.id}`));
-    setWishlistProducts(prods);
-    setWishlistVideos(vids);
-  }, []);
+  const { wishlistItems, removeFromWishlist } = useProductWishlist();
 
-  useEffect(() => {
-    loadWishlist();
-    window.addEventListener("wishlist-updated", loadWishlist);
-    return () => window.removeEventListener("wishlist-updated", loadWishlist);
-  }, [loadWishlist]);
-
-  const handleRemoveProduct = (id: string) => {
-    removeFromWishlist(id);
-    loadWishlist();
-  };
-
-  const handleRemoveVideo = (id: string) => {
-    removeFromWishlist(`video-${id}`);
-    loadWishlist();
-  };
+  // Derive video wishlist from wishlistItems if needed
+  const wishlistVideos: Video[] = []; // keep if useProductWishlist doesn't handle videos
 
   const handleAddToCart = (productId: string) => {
     addToCart(productId);
@@ -49,7 +27,7 @@ export default function WishlistPage() {
     }, 2000);
   };
 
-  const isEmpty = wishlistProducts.length === 0 && wishlistVideos.length === 0;
+  const isEmpty = wishlistItems.length === 0 && wishlistVideos.length === 0;
 
   return (
     <div className='mx-auto container px-4 py-8 lg:px-8'>
@@ -86,29 +64,31 @@ export default function WishlistPage() {
       ) : (
         <>
           {/* Shop Section */}
-          {wishlistProducts.length > 0 && (
+          {wishlistItems.length > 0 && (
             <section className='mt-8'>
               <h2 className='text-lg font-bold text-gold italic mb-4'>Shop</h2>
               <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-                {wishlistProducts.map((product) => (
+                {wishlistItems.map((product) => (
                   <div
                     key={product.id}
                     className='overflow-hidden rounded-xl bg-surface-light border border-border'
                   >
-                    <Link href={`/shop/${product.id}`}>
-                      <div className='relative aspect-[4/3] overflow-hidden bg-surface'>
+                    <Link href={`/shop/${product.slug}`}>
+                      <div className='relative aspect-4/3 overflow-hidden bg-surface'>
                         <Image
-                          src={product.images[0]}
+                          src={product.images[0].image}
                           alt={product.name}
                           fill
+                          unoptimized
                           className='object-cover'
                           sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
                         />
-                        {product.discount && (
-                          <span className='absolute left-3 top-3 rounded-full bg-danger px-2.5 py-1 text-xs font-semibold text-white'>
-                            -{product.discount}% OFF
-                          </span>
-                        )}
+                        {product.price_off &&
+                          parseFloat(product.price_off) > 0 && (
+                            <span className='absolute left-3 top-3 rounded-full bg-danger px-2.5 py-1 text-xs font-semibold text-white'>
+                              -{product.price_off}% OFF
+                            </span>
+                          )}
                       </div>
                     </Link>
                     <div className='p-4'>
@@ -117,11 +97,11 @@ export default function WishlistPage() {
                       </h3>
                       <div className='mt-2 flex items-baseline gap-2'>
                         <span className='text-lg font-bold text-gold'>
-                          ${product.price.toFixed(2)}
+                          ${product.discounted_price.toFixed(2)}
                         </span>
-                        {product.originalPrice && (
+                        {product.price && (
                           <span className='text-sm text-muted line-through'>
-                            ${product.originalPrice.toFixed(2)}
+                            ${parseFloat(product.price).toFixed(2)}
                           </span>
                         )}
                       </div>
@@ -130,8 +110,8 @@ export default function WishlistPage() {
                       </p>
                       <div className='mt-3 flex gap-2'>
                         <button
-                          onClick={() => handleAddToCart(product.id)}
-                          className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-all ${addedIds.has(product.id) ? "bg-success text-white" : "gold-gradient text-black"}`}
+                          onClick={() => handleAddToCart(String(product.id))}
+                          className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-all ${addedIds.has(String(product.id)) ? "bg-success text-white" : "gold-gradient text-black"}`}
                         >
                           <svg
                             className='h-4 w-4'
@@ -146,10 +126,10 @@ export default function WishlistPage() {
                               d='M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z'
                             />
                           </svg>
-                          {addedIds.has(product.id) ? "Added!" : "Add"}
+                          {addedIds.has(String(product.id)) ? "Added!" : "Add"}
                         </button>
                         <button
-                          onClick={() => handleRemoveProduct(product.id)}
+                          onClick={() => removeFromWishlist(product.id)}
                           className='flex items-center justify-center rounded-lg border border-danger/30 p-2.5 text-danger hover:bg-danger/10 transition-colors'
                         >
                           <svg
@@ -227,7 +207,9 @@ export default function WishlistPage() {
                           Add
                         </button>
                         <button
-                          onClick={() => handleRemoveVideo(video.id)}
+                          onClick={() =>
+                            removeFromWishlist(`video-${video.id}`)
+                          }
                           className='flex items-center justify-center rounded-lg border border-danger/30 p-2.5 text-danger hover:bg-danger/10 transition-colors'
                         >
                           <svg

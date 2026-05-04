@@ -16,11 +16,6 @@ type TCategory = {
   name: string;
   slug: string;
 };
-const categories = [
-  { value: "all", label: "All Products" },
-  { value: "accessories", label: "Accessories" },
-  { value: "fashion", label: "Fashion" },
-];
 
 const tabs = [
   { value: "featured", label: "Featured Products", icon: "✦" },

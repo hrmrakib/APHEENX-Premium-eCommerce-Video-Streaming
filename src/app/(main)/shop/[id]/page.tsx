@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -6,6 +8,8 @@ import { useParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import SectionHeader from "@/components/SectionHeader";
 import { useGetProductByIdQuery } from "@/redux/features/product/productAPI";
+import { useProductCart } from "@/hooks/useProductCart";
+import { useProductWishlist } from "@/hooks/useProductWishlist";
 
 export interface Product {
   id: number;
@@ -44,7 +48,16 @@ export default function ShopDetailPage() {
   const router = useRouter();
   const [currentImage, setCurrentImage] = useState(0);
   const [inWishlist, setInWishlist] = useState(false);
-  const [addedToCart, setAddedToCart] = useState(false);
+
+  const { addToCart, isInCart } = useProductCart();
+
+  const {
+    wishlistItems,
+    toggleWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    clearWishlist,
+  } = useProductWishlist();
 
   const { data: productData } = useGetProductByIdQuery(id);
   const product = productData?.data as Product;
@@ -72,15 +85,18 @@ export default function ShopDetailPage() {
     : null;
   const related = product.related_products ?? [];
 
+  const { related_products, ...productWithoutRelated } = product;
+
   const handleAddToCart = () => {
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2000);
+    console.log(productWithoutRelated);
+    addToCart(productWithoutRelated);
   };
 
   const handleBuyNow = () => {};
 
   const handleToggleWishlist = () => {
-    setInWishlist((prev) => !prev);
+    toggleWishlist(productWithoutRelated);
+    // setInWishlist((prev) => !prev);
   };
 
   const prevImage = () => {
@@ -103,7 +119,7 @@ export default function ShopDetailPage() {
         <div className='relative'>
           <div className='relative aspect-square overflow-hidden rounded-xl bg-surface border border-border'>
             <Image
-              src={product.images[currentImage].image} 
+              src={product.images[currentImage].image}
               alt={product.name}
               fill
               unoptimized
@@ -223,9 +239,9 @@ export default function ShopDetailPage() {
           <div className='mt-6 space-y-3'>
             <div className='grid grid-cols-2 gap-3'>
               <button
-                onClick={handleAddToCart}
+                onClick={() => handleAddToCart()}
                 className={`flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all ${
-                  addedToCart
+                  isInCart(product?.id)
                     ? "bg-success text-white"
                     : "gold-gradient text-black hover:shadow-lg hover:shadow-gold/20"
                 }`}
@@ -243,7 +259,7 @@ export default function ShopDetailPage() {
                     d='M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z'
                   />
                 </svg>
-                {addedToCart ? "Added!" : "Add to Cart"}
+                {isInCart(product?.id) ? "Added!" : "Add to Cart"}
               </button>
               <button
                 onClick={handleBuyNow}
@@ -268,14 +284,14 @@ export default function ShopDetailPage() {
             <button
               onClick={handleToggleWishlist}
               className={`flex w-full items-center justify-center gap-2 rounded-lg border py-3 text-sm font-semibold transition-all ${
-                inWishlist
+                isInWishlist(product?.id)
                   ? "border-gold bg-gold/10 text-gold"
                   : "border-border text-muted hover:border-gold/30 hover:text-foreground"
               }`}
             >
               <svg
                 className='h-4 w-4'
-                fill={inWishlist ? "currentColor" : "none"}
+                fill={isInWishlist(product?.id) ? "currentColor" : "none"}
                 stroke='currentColor'
                 viewBox='0 0 24 24'
               >
@@ -286,7 +302,9 @@ export default function ShopDetailPage() {
                   d='M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z'
                 />
               </svg>
-              {inWishlist ? "Added to Wishlist" : "Add to Wishlist"}
+              {isInWishlist(product?.id)
+                ? "Added to Wishlist"
+                : "Add to Wishlist"}
             </button>
           </div>
         </div>

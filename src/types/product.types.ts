@@ -6,7 +6,7 @@ export type TProduct = {
   price_off: string | null;
   price: string;
   discounted_price: number;
-  primary_image: string;
+  primary_image?: string;
   stock: number;
   is_featured: boolean;
 };

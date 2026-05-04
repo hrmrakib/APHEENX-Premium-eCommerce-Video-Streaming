@@ -6,13 +6,20 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
-import { toggleWishlist } from "@/lib/wishlist";
 import { useGetVideoByIdQuery } from "@/redux/features/video/videoAPI";
+import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 
 export default function VideoDetailPage() {
   const params = useParams().id as string;
-  const [inWishlist, setInWishlist] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+
+  const {
+    wishlistItems,
+    toggleWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    clearWishlist,
+  } = useVideoWishlist();
 
   const { data: videoData, isLoading, isError } = useGetVideoByIdQuery(params);
 
@@ -35,11 +42,6 @@ export default function VideoDetailPage() {
   }
 
   const related = video.related_videos ?? [];
-
-  const handleToggleWishlist = () => {
-    const added = toggleWishlist(`video-${video.id}`);
-    setInWishlist(added);
-  };
 
   const catColor =
     video.category_name?.toLowerCase() === "entertainment"
@@ -142,16 +144,17 @@ export default function VideoDetailPage() {
             </button>
           )}
           <button
-            onClick={handleToggleWishlist}
+            // onClick={toggleWishlist}
+            onClick={() => toggleWishlist(video)}
             className={`flex items-center gap-2 rounded-lg border px-6 py-3 text-sm font-semibold transition-all ${
-              inWishlist
+              isInWishlist(video.id)
                 ? "border-gold bg-gold/10 text-gold"
                 : "border-border text-muted hover:border-gold/30 hover:text-foreground"
             }`}
           >
             <svg
               className='h-4 w-4'
-              fill={inWishlist ? "currentColor" : "none"}
+              fill={isInWishlist(video.id) ? "currentColor" : "none"}
               stroke='currentColor'
               viewBox='0 0 24 24'
             >
@@ -162,7 +165,7 @@ export default function VideoDetailPage() {
                 d='M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z'
               />
             </svg>
-            {inWishlist ? "In Wishlist" : "Add to Wishlist"}
+            {isInWishlist(video.id) ? "In Wishlist" : "Add to Wishlist"}
           </button>
         </div>
       </div>
