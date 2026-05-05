@@ -8,6 +8,7 @@ import {
 } from "@/redux/features/video/videoAPI";
 import { useDebounce } from "@/hooks/useDebounce";
 import VideoCard from "@/components/VideoCard";
+import GlobalPagination from "@/components/pagination/GlobalPagination";
 
 // 1. Fixed Interfaces
 interface ICategory {
@@ -39,6 +40,7 @@ export default function VideoPage() {
   const [activeTab, setActiveTab] = useState<FilterTab>("featured");
   const [search, setSearch] = useState("");
   const searchQuery = useDebounce(search);
+  const [page, setPage] = useState(1);
 
   // 3. Fetching Data with corrected filter merging
   const { data: videosData, isLoading: videosLoading } = useGetVideosQuery({
@@ -46,10 +48,12 @@ export default function VideoPage() {
     // Use category dropdown if not "all", otherwise let the tab handle specific categories
     ...(category !== "all" ? { category__slug: category } : {}),
     ...(activeTab ? tabFilters[activeTab] : {}),
+    page,
+    page_size: 9,
   });
-
   const { data: categoriesData } = useGetVideosCategoriesQuery({});
 
+  const totalPages = videosData?.meta?.total_pages || 1;
   // 4. Safe Data Access
   const videos = videosData?.data || [];
   const displayCategories: ICategory[] = [
@@ -160,6 +164,12 @@ export default function VideoPage() {
           </p>
         </div>
       )}
+
+      <GlobalPagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(page) => setPage(page)}
+      />
     </div>
   );
 }

@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
         port: "8086",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "apheenexx.pythonanywhere.com",
+        port: "8086",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -9,6 +9,7 @@ import {
   useGetProductCategoriesQuery,
   useGetProductsQuery,
 } from "@/redux/features/product/productAPI";
+import GlobalPagination from "@/components/pagination/GlobalPagination";
 
 type TCategory = {
   id: string;
@@ -35,12 +36,17 @@ export default function ShopPage() {
   const [activeTab, setActiveTab] = useState<FilterTab>(null);
   const [search, setSearch] = useState("");
   const searchQuery = useDebounce(search);
+  const [page, setPage] = useState(1);
 
   const { data: productsData, isFetching } = useGetProductsQuery({
     search: searchQuery,
     ...(activeTab ? tabFilters[activeTab] : {}),
     category__slug: category === "all" ? undefined : category,
+    page,
+    page_size: 9,
   });
+
+  const totalPages = productsData?.meta?.total_pages || 1;
 
   const { data: categoriesData } = useGetProductCategoriesQuery({});
 
@@ -124,9 +130,7 @@ export default function ShopPage() {
       </div>
 
       {/* Product Grid */}
-
       <div className='mt-8'>
-        {/* Case 1: Currently loading or fetching */}
         {isFetching ? (
           <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
             {Array.from({ length: 9 }).map((_, index) => (
@@ -134,14 +138,12 @@ export default function ShopPage() {
             ))}
           </div>
         ) : products.length > 0 ? (
-          /* Case 2: Data has loaded and has items */
           <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
             {products.map((product: TProduct) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          /* Case 3: Data has loaded but is empty */
           <div className='flex flex-col items-center justify-center py-20 text-center'>
             <svg
               className='h-16 w-16 text-border mb-4'
@@ -163,38 +165,12 @@ export default function ShopPage() {
           </div>
         )}
       </div>
-      {/* {products?.length > 0 ? (
-        <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {isFetching &&
-            Array.from({ length: 9 }).map((_, index) => (
-              <ProductCardSkeleton key={index} />
-            ))}
 
-          {products?.map((product: TProduct) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      ) : (
-        <div className='flex flex-col items-center justify-center py-20 text-center'>
-          <svg
-            className='h-16 w-16 text-border mb-4'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='1'
-              d='M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z'
-            />
-          </svg>
-          <p className='text-muted text-lg'>No products found</p>
-          <p className='text-muted/60 text-sm mt-1'>
-            Try adjusting your filters
-          </p>
-        </div>
-      )} */}
+      <GlobalPagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(page) => setPage(page)}
+      />
     </div>
   );
 }
