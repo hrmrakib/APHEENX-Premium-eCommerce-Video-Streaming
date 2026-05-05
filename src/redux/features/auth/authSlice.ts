@@ -7,6 +7,7 @@ export type TUser = {
   name: string;
   email: string;
   role: string;
+  profile_image: string | null;
   is_email_verified: boolean;
   created_at: string;
 };

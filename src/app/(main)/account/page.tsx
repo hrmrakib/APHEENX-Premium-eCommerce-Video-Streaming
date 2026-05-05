@@ -1,29 +1,50 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import AccountSidebar from "@/components/AccountSidebar";
-import { getOrders } from "@/lib/orders";
-import { getPurchasedVideos } from "@/lib/orders";
-import type { Order } from "@/lib/orders";
+
 import { useProductWishlist } from "@/hooks/useProductWishlist";
 import { useVideoWishlist } from "@/hooks/useVideoWishlist";
+import { useGetUserDashboardQuery } from "@/redux/features/user/userAPI";
+import { ChevronRight, Clock, Package } from "lucide-react";
+
+interface OrderItem {
+  product_name: string;
+  quantity: number;
+}
+
+interface Order {
+  id: number;
+  full_name: string;
+  total_price: string;
+  order_status: string;
+  payment_status: string;
+  created_at: string;
+  items: OrderItem[];
+}
 
 export default function AccountDashboard() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [videoCount, setVideoCount] = useState(0);
-
   const { wishlistItems } = useProductWishlist();
   const { wishlistItems: videoWishlistItems } = useVideoWishlist();
 
   const wishlistCount = wishlistItems?.length + videoWishlistItems?.length;
 
-  useEffect(() => {
-    setOrders(getOrders());
-    setVideoCount(getPurchasedVideos().length);
-    // setWishlistCount(getWishlistCount());
-  }, []);
+  const { data: userDashboardData } = useGetUserDashboardQuery({});
+
+  const userDashboard = userDashboardData?.data;
+
+  const orders = userDashboard?.recent_orders || [];
+
+  console.log({ userDashboard });
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   return (
     <div className='mx-auto container px-4 py-8 lg:px-8'>
@@ -51,7 +72,7 @@ export default function AccountDashboard() {
               </div>
               <div>
                 <p className='text-2xl font-bold text-foreground'>
-                  {orders.length}
+                  {userDashboard?.total_orders}
                 </p>
                 <p className='text-xs text-muted'>Total Orders</p>
               </div>
@@ -74,7 +95,7 @@ export default function AccountDashboard() {
               </div>
               <div>
                 <p className='text-2xl font-bold text-foreground'>
-                  {videoCount}
+                  {userDashboard?.purchased_videos}
                 </p>
                 <p className='text-xs text-muted'>Purchased Videos</p>
               </div>
@@ -105,43 +126,77 @@ export default function AccountDashboard() {
           </div>
 
           {/* Recent Orders */}
-          <div className='card-border bg-surface/50 p-5'>
-            <h2 className='text-lg font-bold text-foreground mb-4'>
-              Recent Orders
-            </h2>
-            {orders.length === 0 ? (
-              <p className='text-sm text-muted py-6 text-center'>
-                No orders yet
-              </p>
-            ) : (
-              <div className='space-y-3'>
-                {orders.slice(0, 5).map((order) => (
-                  <div
-                    key={order.id}
-                    className='flex items-center justify-between border-b border-border pb-3 last:border-0'
-                  >
-                    <div>
-                      <p className='text-sm font-semibold text-foreground'>
+          {orders.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-10 opacity-40'>
+              <Package size={40} strokeWidth={1} className='mb-2 text-white' />
+              <p className='text-sm text-white'>No orders yet</p>
+            </div>
+          ) : (
+            <div className='space-y-4'>
+              {orders.slice(0, 5).map((order: Order) => (
+                <div
+                  key={order.id}
+                  className='group flex items-center justify-between border-b border-white/5 pb-4 last:border-0 last:pb-0'
+                >
+                  <div className='space-y-1'>
+                    <div className='flex items-center gap-3'>
+                      <p className='text-sm font-bold text-white group-hover:text-yellow-500 transition-colors'>
                         Order #{order.id}
                       </p>
-                      <p className='text-xs text-muted'>{order.date}</p>
+                      {/* Status Badge */}
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter ${
+                          order.payment_status === "pending"
+                            ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
+                            : "bg-green-500/10 text-green-500 border border-green-500/20"
+                        }`}
+                      >
+                        {order.payment_status}
+                      </span>
                     </div>
-                    <p className='text-sm font-bold text-gold'>
-                      ${order.total.toFixed(2)}
-                    </p>
+
+                    <div className='flex items-center gap-2 text-xs text-white/40'>
+                      <Clock size={12} />
+                      <span>{formatDate(order.created_at)}</span>
+                      <span>•</span>
+                      <span>
+                        {order.items.length}{" "}
+                        {order.items.length > 1 ? "items" : "item"}
+                      </span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-            {orders.length > 0 && (
-              <Link
-                href='/account/orders'
-                className='mt-4 inline-block text-sm text-gold hover:text-gold-light transition-colors'
-              >
-                View all orders →
-              </Link>
-            )}
-          </div>
+
+                  <div className='text-right flex items-center gap-4'>
+                    <div>
+                      <p className='text-sm font-black text-yellow-500'>
+                        ${parseFloat(order.total_price).toFixed(2)}
+                      </p>
+                      <p className='text-[10px] text-white/30 font-medium italic'>
+                        {order.items[0]?.product_name.substring(0, 15)}...
+                      </p>
+                    </div>
+                    <ChevronRight
+                      size={16}
+                      className='text-white/20 group-hover:text-white transition-colors'
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {orders.length > 0 && (
+            <Link
+              href='/account/orders'
+              className='mt-6 flex items-center justify-center w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white/80 hover:text-white transition-all group'
+            >
+              View all orders
+              <ChevronRight
+                size={14}
+                className='ml-1 group-hover:translate-x-1 transition-transform'
+              />
+            </Link>
+          )}
         </div>
       </div>
     </div>
