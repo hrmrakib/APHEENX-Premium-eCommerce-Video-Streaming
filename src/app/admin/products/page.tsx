@@ -64,6 +64,7 @@ export default function AdminProductsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{
     id: number;
+    slug: string;
     name: string;
   } | null>(null);
 
@@ -83,7 +84,11 @@ export default function AdminProductsPage() {
 
   // Open Modal Handler
   const openDeleteModal = (product: Product) => {
-    setProductToDelete({ id: product.id, name: product.name });
+    setProductToDelete({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+    });
     setIsDeleteModalOpen(true);
   };
 
@@ -91,7 +96,7 @@ export default function AdminProductsPage() {
   const confirmDelete = async () => {
     if (!productToDelete) return;
     try {
-      await deleteProduct(productToDelete.id).unwrap();
+      await deleteProduct(productToDelete.slug).unwrap();
       toast.success("Product deleted successfully");
       setIsDeleteModalOpen(false);
     } catch (error) {
