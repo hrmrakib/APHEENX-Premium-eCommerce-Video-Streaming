@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, AlertCircle } from "lucide-react"; // I recommend Lucide for cleaner icons
+import Image from "next/image";
 
 const menuItems = [
   { label: "Dashboard", href: "/account", icon: "user" },
@@ -92,6 +93,8 @@ export default function AccountSidebar() {
     router.push("/signin");
   };
 
+  console.log({ user });
+
   return (
     <>
       <aside className='w-full lg:w-64 shrink-0'>
@@ -99,7 +102,14 @@ export default function AccountSidebar() {
           {/* User Info */}
           <div className='flex items-center gap-3 pb-4 border-b border-border'>
             <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gold/20 text-gold text-sm font-bold'>
-              {user?.name?.at(0)?.toUpperCase() || "U"}
+              {/* {user?.name?.at(0)?.toUpperCase() || "U"} */}
+              <Image
+                src={user?.profile_image as string}
+                alt={user?.name || "User"}
+                width={40}
+                height={40}
+                className='rounded-full'
+              />
             </div>
             <div className='min-w-0'>
               <p className='text-sm font-semibold text-foreground truncate'>

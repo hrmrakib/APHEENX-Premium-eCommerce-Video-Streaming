@@ -79,7 +79,7 @@ export default function VerifyPage() {
     try {
       await verifyEmail({ email, otp: fullCode });
 
-      router.push(type === "signup" ? "/signin" : "/");
+      router.push(type === "signup" ? "/login" : "/");
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||

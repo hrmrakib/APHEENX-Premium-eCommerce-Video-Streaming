@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser, userTrack } from "@/redux/features/auth/authSlice";
+import { toast } from "sonner";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -36,7 +37,10 @@ export default function SignInPage() {
       // Parse the full JSON response
       const result = await response.json();
 
-      console.log(result);
+      if (response.status !== 200) {
+        toast.error(result.message);
+        return;
+      }
 
       if (response?.ok) {
         dispatch(userTrack());
@@ -62,7 +66,8 @@ export default function SignInPage() {
         // Handle backend validation errors (e.g., result.message)
         console.error("Login failed:", result.message || "Unknown error");
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to login");
       // Handle network errors
       console.error("Network error:", error);
       setError("Network error. Please try again.");
