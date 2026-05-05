@@ -200,7 +200,7 @@ export default function AdminVideosPage() {
                     <td className='px-6 py-4'>
                       <div className='flex items-center gap-3'>
                         <Link
-                          href={`/admin/videos/edit/${video.id}`}
+                          href={`/admin/videos/edit/${video.slug}`}
                           className='text-white/60 hover:text-white transition-colors'
                         >
                           <Pencil size={18} />

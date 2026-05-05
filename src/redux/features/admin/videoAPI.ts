@@ -21,6 +21,15 @@ const videoAdminAPI = baseAPI.injectEndpoints({
       invalidatesTags: ["Video"],
     }),
 
+    updateVideo: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/videos/${id}/`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Video"],
+    }),
+
     deleteVideo: builder.mutation({
       query: (id) => ({
         url: `/videos/${id}/`,
@@ -35,6 +44,7 @@ export const {
   useGetVideosQuery,
   useGetVideoQuery,
   useAddVideoMutation,
+  useUpdateVideoMutation,
   useDeleteVideoMutation,
 } = videoAdminAPI;
 

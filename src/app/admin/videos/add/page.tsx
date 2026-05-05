@@ -4,7 +4,7 @@
 
 import { useState, ChangeEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Upload, X, FileVideo } from "lucide-react";
+import { ArrowLeft, Upload, X, FileVideo, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { useAddVideoMutation } from "@/redux/features/admin/videoAPI";
 
@@ -32,7 +32,7 @@ export default function AddNewVideoPage() {
     trailer: null,
     main_video: null,
   });
-  const [addVideoMutation] = useAddVideoMutation();
+  const [addVideoMutation, { isLoading: isAdding }] = useAddVideoMutation();
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -323,15 +323,31 @@ export default function AddNewVideoPage() {
       </div>
 
       <div className='flex items-center gap-4 pt-6'>
-        <button onClick={handleSubmit} className='btn-gold min-w-35'>
-          Publish Video
+        <button
+          disabled={isAdding}
+          onClick={handleSubmit}
+          className='btn-gold min-w-35 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
+        >
+          {isAdding ? "Publishing..." : "Publish Video"}{" "}
+          {isAdding && <Loader className='animate-spin ml-2' size={16} />}
         </button>
         <Link
           href='/admin/videos'
-          className='btn-outline-gold border-white/20 text-white hover:bg-white/5 min-w-35'
+          className={`btn-outline-gold border-white/20 text-white hover:bg-white/5 min-w-35 flex items-center justify-center ${
+            isAdding ? "pointer-events-none opacity-50" : ""
+          }`}
+          tabIndex={isAdding ? -1 : 0}
         >
           Cancel
         </Link>
+      </div>
+
+      <div>
+        {true && (
+          <p className='text-white/60 text-sm'>
+            <b>Note:</b> If have large file, it might take some time to upload
+          </p>
+        )}
       </div>
     </div>
   );
