@@ -94,14 +94,14 @@ export default function AdminVideosPage() {
         </div>
         <Link
           href='/admin/videos/add'
-          className='bg-[#D4A843] hover:bg-[#B8922F] text-black px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors'
+          className='bg-gold hover:bg-gold-dark text-black px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors'
         >
           <Plus size={18} />
           Add Video
         </Link>
       </div>
 
-      <div className='bg-[#0a0a0a] rounded-xl border border-white/10 overflow-hidden'>
+      <div className='bg-background rounded-xl border border-white/10 overflow-hidden'>
         <div className='overflow-x-auto'>
           <table className='w-full text-left text-sm text-white/80'>
             <thead className='bg-[#111] text-white/60 text-xs border-b border-white/10'>
@@ -134,7 +134,7 @@ export default function AdminVideosPage() {
                         />
                       </div>
                     </td>
-                    <td className='px-6 py-4 font-medium text-white max-w-[200px] truncate'>
+                    <td className='px-6 py-4 font-medium text-white max-w-50 truncate'>
                       {video.title}
                     </td>
                     <td className='px-6 py-4'>

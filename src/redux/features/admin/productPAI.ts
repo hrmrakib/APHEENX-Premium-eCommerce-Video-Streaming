@@ -10,6 +10,14 @@ const productAdminAPI = baseAPI.injectEndpoints({
       query: (id) => `/products/${id}`,
     }),
 
+    createProduct: builder.mutation({
+      query: (data) => ({
+        url: "/products/",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
     deleteProduct: builder.mutation({
       query: (id) => ({
         url: `/products/${id}`,
@@ -22,6 +30,7 @@ const productAdminAPI = baseAPI.injectEndpoints({
 export const {
   useGetAllProductsQuery,
   useGetProductByIdQuery,
+  useCreateProductMutation,
   useDeleteProductMutation,
 } = productAdminAPI;
 

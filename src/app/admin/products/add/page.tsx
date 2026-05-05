@@ -1,72 +1,156 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Upload, Minus, Plus } from "lucide-react";
+import { Upload, Minus, Plus, X } from "lucide-react";
+import { useCreateProductMutation } from "@/redux/features/admin/productPAI";
+import { useRouter } from "next/navigation";
 
 export default function AddNewProductPage() {
-  const [isFeatured, setIsFeatured] = useState(false);
+  const router = useRouter();
+  const [createProduct, { isLoading }] = useCreateProductMutation();
+
+  // 1. Unified State for Text Fields
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    price_off: "",
+    category: "", // Ensure this receives a PK (ID) as a string/number
+    status: "active",
+  });
+
   const [stock, setStock] = useState(0);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+
+  // Handle Text/Select Changes
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleStockChange = (amount: number) => {
-    setStock(prev => Math.max(0, prev + amount));
+    setStock((prev) => Math.max(0, prev + amount));
+  };
+
+  // 2. Image Selection Logic
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setSelectedImages((prev) => [...prev, ...filesArray]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // 3. Create Product Function
+  const handlePublish = async () => {
+    try {
+      // Must use FormData for file uploads
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("description", formData.description);
+      data.append("price", formData.price);
+      data.append("price_off", formData.price_off);
+      data.append("category", formData.category); // Based on image_2e0f7f.png, send ID here
+      data.append("stock", stock.toString());
+      data.append("status", formData.status);
+      data.append("is_featured", String(isFeatured));
+
+      selectedImages.forEach((file) => {
+        data.append("images", file); // Backend receives this as a list
+      });
+
+      await createProduct(data).unwrap();
+      alert("Product created successfully!");
+      router.push("/admin/products");
+    } catch (err) {
+      console.error("Failed to create product:", err);
+      alert("Error: Check console or verify Category ID is correct.");
+    }
   };
 
   return (
-    <div className="max-w-4xl space-y-8 pb-10">
-      <div>
-        <Link href="/admin/products" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors">
-          <ArrowLeft size={16} />
-          <span className="text-sm">Back to products</span>
-        </Link>
-        <h1 className="text-2xl font-bold text-white mb-1">Add New Product</h1>
-        <p className="text-white/60 text-sm">Create a new product for your store</p>
-      </div>
+    <div className='max-w-4xl space-y-8 pb-10'>
+      {/* ... Header remains same ... */}
 
-      <div className="space-y-6">
-        <h2 className="text-yellow-500 font-semibold text-lg border-b border-white/5 pb-2">Product Information</h2>
-        
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-white/90">Product Name<span className="text-red-500">*</span></label>
-          <input type="text" placeholder="Enter product name" className="input-field" />
-        </div>
-        
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-white/90">Product Description<span className="text-red-500">*</span></label>
-          <textarea 
-            placeholder="Enter product description" 
-            rows={4}
-            className="input-field resize-none" 
+      <div className='space-y-6'>
+        <h2 className='text-yellow-500 font-semibold text-lg border-b border-white/5 pb-2'>
+          Product Information
+        </h2>
+
+        <div className='space-y-2'>
+          <label className='text-sm font-medium text-white/90'>
+            Product Name*
+          </label>
+          <input
+            name='name'
+            value={formData.name}
+            onChange={handleChange}
+            type='text'
+            placeholder='Enter product name'
+            className='input-field'
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-white/90">Price (USD)<span className="text-red-500">*</span></label>
-            <input type="number" placeholder="0.00" className="input-field" />
+        <div className='space-y-2'>
+          <label className='text-sm font-medium text-white/90'>
+            Product Description*
+          </label>
+          <textarea
+            name='description'
+            value={formData.description}
+            onChange={handleChange}
+            placeholder='Enter product description'
+            rows={4}
+            className='input-field resize-none'
+          />
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium text-white/90'>
+              Price (USD)*
+            </label>
+            <input
+              name='price'
+              value={formData.price}
+              onChange={handleChange}
+              type='number'
+              placeholder='0.00'
+              className='input-field'
+            />
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-white/90">Stock Quantity<span className="text-red-500">*</span></label>
-            <div className="flex items-center">
-              <input 
-                type="number" 
-                value={stock} 
+
+          <div className='space-y-2'>
+            <label className='text-sm font-medium text-white/90'>
+              Stock Quantity*
+            </label>
+            <div className='flex items-center'>
+              <input
+                type='number'
+                value={stock}
                 onChange={(e) => setStock(parseInt(e.target.value) || 0)}
-                className="input-field rounded-r-none border-r-0" 
+                className='input-field rounded-r-none border-r-0'
               />
-              <div className="flex items-center border border-white/20 border-l-0 rounded-r-lg bg-[#0a0a0a] px-2 h-[46px]">
-                <button 
-                  type="button"
+              <div className='flex items-center border border-white/20 border-l-0 rounded-r-lg bg-[#0a0a0a] px-2 h-[46px]'>
+                <button
+                  type='button'
                   onClick={() => handleStockChange(-1)}
-                  className="p-1 text-white/60 hover:text-white"
+                  className='p-1 text-white/60 hover:text-white'
                 >
                   <Minus size={16} />
                 </button>
-                <button 
-                  type="button"
+                <button
+                  type='button'
                   onClick={() => handleStockChange(1)}
-                  className="p-1 text-white/60 hover:text-white"
+                  className='p-1 text-white/60 hover:text-white'
                 >
                   <Plus size={16} />
                 </button>
@@ -75,65 +159,318 @@ export default function AddNewProductPage() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-white/90">Price OFF (%)<span className="text-red-500">*</span></label>
-          <input type="number" placeholder="00.0%" className="input-field max-w-[calc(50%-12px)]" />
+        <div className='space-y-2'>
+          <label className='text-sm font-medium text-white/90'>
+            Price OFF (%)*
+          </label>
+          <input
+            name='price_off'
+            value={formData.price_off}
+            onChange={handleChange}
+            type='number'
+            placeholder='0'
+            className='input-field max-w-[calc(50%-12px)]'
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-white/90">Category<span className="text-red-500">*</span></label>
-            <select className="input-field appearance-none bg-[#0a0a0a]">
-              <option value="">Select category</option>
-              <option value="accessories">Accessories</option>
-              <option value="fashion">Fashion</option>
-              <option value="electronics">Electronics</option>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium text-white/90'>
+              Category*
+            </label>
+            <select
+              name='category'
+              value={formData.category}
+              onChange={handleChange}
+              className='input-field appearance-none bg-[#0a0a0a]'
+            >
+              <option value=''>Select category</option>
+              {/* Important: Value must be the PK (ID) as seen in image_2e0f7f.png */}
+              <option value='1'>Accessories</option>
+              <option value='2'>Fashion</option>
             </select>
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-white/90">Status<span className="text-red-500">*</span></label>
-            <select className="input-field appearance-none bg-[#0a0a0a]">
-              <option value="draft">Draft</option>
-              <option value="active">Active</option>
+
+          <div className='space-y-2'>
+            <label className='text-sm font-medium text-white/90'>Status*</label>
+            <select
+              name='status'
+              value={formData.status}
+              onChange={handleChange}
+              className='input-field appearance-none bg-[#0a0a0a]'
+            >
+              <option value='active'>Active</option>
+              <option value='draft'>Draft</option>
             </select>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <label className="text-sm font-medium text-white/90">Product Images<span className="text-red-500">*</span></label>
-          <div className="border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-yellow-500/50 hover:bg-white/5 transition-all">
-            <Upload className="text-white/40 mb-3" size={24} />
-            <p className="text-white/80 text-sm mb-1">Click to upload or drag and drop</p>
-            <p className="text-white/40 text-xs">PNG, JPG, WEBP (max. 5MB each)</p>
-          </div>
-          
-          {/* Mock image previews */}
-          <div className="flex gap-4 mt-4">
-             <div className="w-24 h-24 rounded-lg bg-yellow-900/40 border border-yellow-500/20 flex items-center justify-center overflow-hidden">
-                <span className="text-[10px] text-yellow-500 font-bold">IMAGE 1</span>
-             </div>
-             <div className="w-24 h-24 rounded-lg bg-yellow-900/40 border border-yellow-500/20 flex items-center justify-center overflow-hidden">
-                <span className="text-[10px] text-yellow-500 font-bold">IMAGE 2</span>
-             </div>
-          </div>
+        {/* Image Upload Input */}
+        <div className='space-y-4'>
+          <label className='text-sm font-medium text-white/90'>
+            Product Images*
+          </label>
+
+          <input
+            type='file'
+            id='file-upload'
+            className='hidden'
+            accept='image/*'
+            multiple // 5. Added multiple attribute
+            onChange={handleImageChange}
+          />
+
+          <label
+            htmlFor='file-upload'
+            className='border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-yellow-500/50 hover:bg-white/5 transition-all'
+          >
+            <Upload className='text-white/40 mb-3' size={24} />
+            <p className='text-white/80 text-sm mb-1'>
+              Click to upload multiple images
+            </p>
+          </label>
+
+          {/* 6. Image Preview Grid */}
+          {selectedImages.length > 0 && (
+            <div className='flex flex-wrap gap-4 mt-4'>
+              {selectedImages.map((file, index) => (
+                <div key={index} className='relative group w-24 h-24'>
+                  <div className='w-full h-full rounded-lg bg-yellow-900/40 border border-yellow-500/20 flex items-center justify-center overflow-hidden'>
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt='preview'
+                      className='object-cover w-full h-full'
+                    />
+                  </div>
+                  <button
+                    onClick={() => removeImage(index)}
+                    className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity'
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center gap-3 pt-4">
-        <button 
+      <div className='flex items-center gap-3 pt-4'>
+        <button
           onClick={() => setIsFeatured(!isFeatured)}
-          className={`w-12 h-6 rounded-full transition-colors relative ${isFeatured ? 'bg-yellow-500' : 'bg-white/20'}`}
+          className={`w-12 h-6 rounded-full transition-colors relative ${isFeatured ? "bg-yellow-500" : "bg-white/20"}`}
         >
-          <span className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${isFeatured ? 'translate-x-6' : 'translate-x-0'}`} />
+          <span
+            className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${isFeatured ? "translate-x-6" : "translate-x-0"}`}
+          />
         </button>
-        <span className="text-white font-medium">Mark as Featured Product</span>
+        <span className='text-white font-medium'>Mark as Featured Product</span>
       </div>
 
-      <div className="flex items-center gap-4 pt-6">
-        <button className="btn-gold min-w-[140px]">Publish Product</button>
-        <Link href="/admin/products" className="btn-outline-gold border-white/20 text-white hover:bg-white/5 min-w-[140px]">Cancel</Link>
+      <div className='flex items-center gap-4 pt-6'>
+        <button
+          onClick={handlePublish}
+          disabled={isLoading}
+          className='btn-gold min-w-[140px] disabled:opacity-50'
+        >
+          {isLoading ? "Publishing..." : "Publish Product"}
+        </button>
+        <Link
+          href='/admin/products'
+          className='btn-outline-gold border-white/20 text-white hover:bg-white/5 min-w-[140px]'
+        >
+          Cancel
+        </Link>
       </div>
     </div>
   );
 }
+
+// "use client";
+
+// import { useState } from "react";
+// import Link from "next/link";
+// import { ArrowLeft, Upload, Minus, Plus } from "lucide-react";
+// import { useCreateProductMutation } from "@/redux/features/admin/productPAI";
+
+// export default function AddNewProductPage() {
+//   const [isFeatured, setIsFeatured] = useState(false);
+//   const [stock, setStock] = useState(0);
+
+//   const [createProductMutation] = useCreateProductMutation();
+
+//   const handleStockChange = (amount: number) => {
+//     setStock((prev) => Math.max(0, prev + amount));
+//   };
+
+//   return (
+//     <div className='max-w-4xl space-y-8 pb-10'>
+//       <div>
+//         <Link
+//           href='/admin/products'
+//           className='inline-flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors'
+//         >
+//           <ArrowLeft size={16} />
+//           <span className='text-sm'>Back to products</span>
+//         </Link>
+//         <h1 className='text-2xl font-bold text-white mb-1'>Add New Product</h1>
+//         <p className='text-white/60 text-sm'>
+//           Create a new product for your store
+//         </p>
+//       </div>
+
+//       <div className='space-y-6'>
+//         <h2 className='text-yellow-500 font-semibold text-lg border-b border-white/5 pb-2'>
+//           Product Information
+//         </h2>
+
+//         <div className='space-y-2'>
+//           <label className='text-sm font-medium text-white/90'>
+//             Product Name<span className='text-red-500'>*</span>
+//           </label>
+//           <input
+//             type='text'
+//             placeholder='Enter product name'
+//             className='input-field'
+//           />
+//         </div>
+
+//         <div className='space-y-2'>
+//           <label className='text-sm font-medium text-white/90'>
+//             Product Description<span className='text-red-500'>*</span>
+//           </label>
+//           <textarea
+//             placeholder='Enter product description'
+//             rows={4}
+//             className='input-field resize-none'
+//           />
+//         </div>
+
+//         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+//           <div className='space-y-2'>
+//             <label className='text-sm font-medium text-white/90'>
+//               Price (USD)<span className='text-red-500'>*</span>
+//             </label>
+//             <input type='number' placeholder='0.00' className='input-field' />
+//           </div>
+
+//           <div className='space-y-2'>
+//             <label className='text-sm font-medium text-white/90'>
+//               Stock Quantity<span className='text-red-500'>*</span>
+//             </label>
+//             <div className='flex items-center'>
+//               <input
+//                 type='number'
+//                 value={stock}
+//                 onChange={(e) => setStock(parseInt(e.target.value) || 0)}
+//                 className='input-field rounded-r-none border-r-0'
+//               />
+//               <div className='flex items-center border border-white/20 border-l-0 rounded-r-lg bg-[#0a0a0a] px-2 h-[46px]'>
+//                 <button
+//                   type='button'
+//                   onClick={() => handleStockChange(-1)}
+//                   className='p-1 text-white/60 hover:text-white'
+//                 >
+//                   <Minus size={16} />
+//                 </button>
+//                 <button
+//                   type='button'
+//                   onClick={() => handleStockChange(1)}
+//                   className='p-1 text-white/60 hover:text-white'
+//                 >
+//                   <Plus size={16} />
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className='space-y-2'>
+//           <label className='text-sm font-medium text-white/90'>
+//             Price OFF (%)<span className='text-red-500'>*</span>
+//           </label>
+//           <input
+//             type='number'
+//             placeholder='00.0%'
+//             className='input-field max-w-[calc(50%-12px)]'
+//           />
+//         </div>
+
+//         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+//           <div className='space-y-2'>
+//             <label className='text-sm font-medium text-white/90'>
+//               Category<span className='text-red-500'>*</span>
+//             </label>
+//             <select className='input-field appearance-none bg-[#0a0a0a]'>
+//               <option value=''>Select category</option>
+//               <option value='accessories'>Accessories</option>
+//               <option value='fashion'>Fashion</option>
+//               <option value='electronics'>Electronics</option>
+//             </select>
+//           </div>
+
+//           <div className='space-y-2'>
+//             <label className='text-sm font-medium text-white/90'>
+//               Status<span className='text-red-500'>*</span>
+//             </label>
+//             <select className='input-field appearance-none bg-[#0a0a0a]'>
+//               <option value='draft'>Draft</option>
+//               <option value='active'>Active</option>
+//             </select>
+//           </div>
+//         </div>
+
+//         <div className='space-y-4'>
+//           <label className='text-sm font-medium text-white/90'>
+//             Product Images<span className='text-red-500'>*</span>
+//           </label>
+//           <div className='border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-yellow-500/50 hover:bg-white/5 transition-all'>
+//             <Upload className='text-white/40 mb-3' size={24} />
+//             <p className='text-white/80 text-sm mb-1'>
+//               Click to upload or drag and drop
+//             </p>
+//             <p className='text-white/40 text-xs'>
+//               PNG, JPG, WEBP (max. 5MB each)
+//             </p>
+//           </div>
+
+//           {/* Mock image previews */}
+//           <div className='flex gap-4 mt-4'>
+//             <div className='w-24 h-24 rounded-lg bg-yellow-900/40 border border-yellow-500/20 flex items-center justify-center overflow-hidden'>
+//               <span className='text-[10px] text-yellow-500 font-bold'>
+//                 IMAGE 1
+//               </span>
+//             </div>
+//             <div className='w-24 h-24 rounded-lg bg-yellow-900/40 border border-yellow-500/20 flex items-center justify-center overflow-hidden'>
+//               <span className='text-[10px] text-yellow-500 font-bold'>
+//                 IMAGE 2
+//               </span>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       <div className='flex items-center gap-3 pt-4'>
+//         <button
+//           onClick={() => setIsFeatured(!isFeatured)}
+//           className={`w-12 h-6 rounded-full transition-colors relative ${isFeatured ? "bg-yellow-500" : "bg-white/20"}`}
+//         >
+//           <span
+//             className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${isFeatured ? "translate-x-6" : "translate-x-0"}`}
+//           />
+//         </button>
+//         <span className='text-white font-medium'>Mark as Featured Product</span>
+//       </div>
+
+//       <div className='flex items-center gap-4 pt-6'>
+//         <button className='btn-gold min-w-[140px]'>Publish Product</button>
+//         <Link
+//           href='/admin/products'
+//           className='btn-outline-gold border-white/20 text-white hover:bg-white/5 min-w-[140px]'
+//         >
+//           Cancel
+//         </Link>
+//       </div>
+//     </div>
+//   );
+// }

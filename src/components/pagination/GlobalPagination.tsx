@@ -42,7 +42,7 @@ export default function GlobalPagination({
             onClick={() => onPageChange(pageNumber)}
             className={`w-10 h-10 rounded-lg border text-sm transition-all ${
               currentPage === pageNumber
-                ? "bg-gradient-to-r from-yellow-600 to-yellow-400 text-black border-yellow-500 font-bold"
+                ? "bg-linear-to-r from-yellow-600 to-yellow-400 text-black border-yellow-500 font-bold"
                 : "border-white/10 text-white/60 hover:border-yellow-500/50"
             }`}
           >
