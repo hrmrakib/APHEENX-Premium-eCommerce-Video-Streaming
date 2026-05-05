@@ -2,7 +2,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useProductCart } from "@/hooks/useProductCart";
 import { useCreateOrderMutation } from "@/redux/features/order/orderAPI";
@@ -10,8 +9,7 @@ import { toast } from "sonner";
 import { US_STATES } from "@/constants";
 
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { items, clearCart } = useProductCart(); // items is [{ product, quantity }]
+  const { items, clearCart } = useProductCart();
   const [createOrderMutation, { isLoading }] = useCreateOrderMutation();
 
   const [form, setForm] = useState({
@@ -24,8 +22,6 @@ export default function CheckoutPage() {
     postalCode: "",
     country: "United States",
   });
-
-  console.log(form);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 

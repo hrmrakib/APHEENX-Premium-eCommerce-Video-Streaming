@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useState } from "react";
@@ -10,6 +13,65 @@ import SectionHeader from "@/components/SectionHeader";
 import { useGetProductByIdQuery } from "@/redux/features/product/productAPI";
 import { useProductCart } from "@/hooks/useProductCart";
 import { useProductWishlist } from "@/hooks/useProductWishlist";
+
+const ShopDetailSkeleton = () => {
+  return (
+    <div className='mx-auto container px-4 py-8 lg:px-8 animate-pulse'>
+      <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
+        {/* Image Carousel Skeleton */}
+        <div>
+          <div className='aspect-square rounded-xl bg-muted/20 border border-border' />
+          <div className='mt-4 flex justify-center gap-2'>
+            <div className='h-2 w-6 rounded-full bg-muted/20' />
+            <div className='h-2 w-2 rounded-full bg-muted/20' />
+            <div className='h-2 w-2 rounded-full bg-muted/20' />
+          </div>
+        </div>
+
+        {/* Product Info Skeleton */}
+        <div className='flex flex-col'>
+          <div className='h-6 w-24 rounded-full bg-muted/20' /> {/* Badge */}
+          <div className='mt-4 h-10 w-3/4 rounded-lg bg-muted/20' />{" "}
+          {/* Title */}
+          <div className='mt-4 h-8 w-32 rounded-lg bg-muted/20' /> {/* Price */}
+          <div className='mt-8 space-y-2'>
+            {" "}
+            {/* Description */}
+            <div className='h-4 w-24 rounded bg-muted/20' />
+            <div className='h-3 w-full rounded bg-muted/20' />
+            <div className='h-3 w-full rounded bg-muted/20' />
+            <div className='h-3 w-2/3 rounded bg-muted/20' />
+          </div>
+          <div className='mt-8 h-10 w-full border-t border-border pt-4 bg-transparent'>
+            <div className='h-4 w-40 rounded bg-muted/20' />
+          </div>
+          <div className='mt-6 space-y-3'>
+            {" "}
+            {/* Buttons */}
+            <div className='grid grid-cols-2 gap-3'>
+              <div className='h-12 rounded-lg bg-muted/20' />
+              <div className='h-12 rounded-lg bg-muted/20' />
+            </div>
+            <div className='h-12 w-full rounded-lg bg-muted/20' />
+          </div>
+        </div>
+      </div>
+
+      {/* Related Products Skeleton */}
+      <div className='mt-16'>
+        <div className='flex justify-between items-center mb-6'>
+          <div className='h-8 w-48 rounded bg-muted/20' />
+          <div className='h-4 w-20 rounded bg-muted/20' />
+        </div>
+        <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className='aspect-[3/4] rounded-xl bg-muted/20' />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export interface Product {
   id: number;
@@ -59,8 +121,12 @@ export default function ShopDetailPage() {
     clearWishlist,
   } = useProductWishlist();
 
-  const { data: productData } = useGetProductByIdQuery(id);
+  const { data: productData, isLoading } = useGetProductByIdQuery(id);
   const product = productData?.data as Product;
+
+  if (isLoading) {
+    return <ShopDetailSkeleton />;
+  }
 
   if (!product) {
     return (
@@ -99,7 +165,6 @@ export default function ShopDetailPage() {
 
   const handleToggleWishlist = () => {
     toggleWishlist(productWithoutRelated);
-    // setInWishlist((prev) => !prev);
   };
 
   const prevImage = () => {

@@ -52,7 +52,15 @@ export default function ShopPage() {
     ...(categoriesData?.data || []),
   ];
 
-  console.log(products);
+  if (isFetching) {
+    return (
+      <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+        {Array(6).map((_, i) => (
+          <ProductCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className='mx-auto container px-4 py-8 lg:px-8'>
