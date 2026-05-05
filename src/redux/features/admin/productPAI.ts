@@ -31,7 +31,7 @@ const productAdminAPI = baseAPI.injectEndpoints({
     }),
 
     updateProduct: builder.mutation({
-      query: ({ id, ...data }) => ({
+      query: ({ id, data }) => ({
         url: `/products/${id}/`,
         method: "PATCH",
         body: data,

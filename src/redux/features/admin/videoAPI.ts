@@ -14,7 +14,7 @@ const videoAdminAPI = baseAPI.injectEndpoints({
 
     addVideo: builder.mutation({
       query: (data) => ({
-        url: "/videos",
+        url: "/videos/",
         method: "POST",
         body: data,
       }),

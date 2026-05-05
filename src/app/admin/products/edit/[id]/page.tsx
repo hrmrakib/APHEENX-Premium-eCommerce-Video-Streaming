@@ -9,7 +9,8 @@ import { Upload, Minus, Plus, X, Loader2 } from "lucide-react";
 import {
   useAddProductImageMutation,
   useCreateProductCategoryMutation,
-  useCreateProductMutation,
+  // useCreateProductMutation,
+  useUpdateProductMutation,
   useDeleteProductImageMutation,
 } from "@/redux/features/admin/productPAI";
 import { useParams, useRouter } from "next/navigation";
@@ -64,8 +65,8 @@ export default function AddNewProductPage() {
   const router = useRouter();
 
   // Mutations
-  const [createProduct, { isLoading: createProductLoading }] =
-    useCreateProductMutation();
+  const [updateProductMutation, { isLoading: createProductLoading }] =
+    useUpdateProductMutation();
   const [createProductCategoryMutation] = useCreateProductCategoryMutation();
   const [addProductImage] = useAddProductImageMutation();
   const [deleteProductImage] = useDeleteProductImageMutation();
@@ -141,8 +142,8 @@ export default function AddNewProductPage() {
               imageData: imgData,
             }).unwrap();
             toast.success("Image uploaded");
-          } catch (err) {
-            toast.error("Failed to upload image");
+          } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to upload image");
           }
         }
       } else {
@@ -162,8 +163,8 @@ export default function AddNewProductPage() {
       await deleteProductImage({ productId: id, imageId }).unwrap();
       toast.success("Image deleted");
       setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
-    } catch (err) {
-      toast.error("Failed to delete image");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to delete image");
     }
   };
 
@@ -193,7 +194,7 @@ export default function AddNewProductPage() {
         selectedFiles.forEach((file) => data.append("images", file));
       }
 
-      await createProduct(data).unwrap();
+      await updateProductMutation({ id, data }).unwrap();
       toast.success(id ? "Product updated!" : "Product created!");
       router.push("/admin/products");
     } catch (err: any) {
@@ -302,7 +303,9 @@ export default function AddNewProductPage() {
               onChange={handleChange}
               className='input-field appearance-none bg-background text-white'
             >
-              <option value=''>Select category</option>
+              <option value='' className='bg-background text-white'>
+                Select category
+              </option>
               {categories?.map((cat: ICat) => (
                 <option
                   key={cat.id}
@@ -312,7 +315,7 @@ export default function AddNewProductPage() {
                   {cat.name}
                 </option>
               ))}
-              <option value='custom' className='text-yellow-500'>
+              <option value='custom' className='bg-background text-white'>
                 + Add New Category
               </option>
             </select>
