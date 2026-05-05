@@ -51,6 +51,15 @@ export const videoAPI = baseAPI.injectEndpoints({
       }),
       providesTags: ["Video"],
     }),
+
+    unlockVideoByOrder: builder.mutation({
+      query: (body) => ({
+        url: `/video-orders/create/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Video"],
+    }),
   }),
 });
 
@@ -63,6 +72,7 @@ export const {
   useGetNewestVideosQuery,
   useGetMostViewedVideosQuery,
   useGetMyPurchasedVideosQuery,
+  useUnlockVideoByOrderMutation,
 } = videoAPI;
 
 export default videoAPI;

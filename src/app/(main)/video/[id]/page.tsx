@@ -8,15 +8,20 @@ import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
 import {
   useGetVideoByIdQuery,
+  useUnlockVideoByOrderMutation,
   // useGetVideoStreamQuery,
 } from "@/redux/features/video/videoAPI";
 import { useVideoWishlist } from "@/hooks/useVideoWishlist";
+import { toast } from "sonner";
+import { Loader } from "lucide-react";
 
 export default function VideoDetailPage() {
   const params = useParams().id as string;
   const [showPayment, setShowPayment] = useState(false);
 
   const { toggleWishlist, isInWishlist } = useVideoWishlist();
+  const [unlockVideoByOrderMutation, { isLoading: isUnlockingVideo }] =
+    useUnlockVideoByOrderMutation();
   const { data: videoData, isLoading, isError } = useGetVideoByIdQuery(params);
   const video = videoData?.data;
   // const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id);
@@ -46,6 +51,25 @@ export default function VideoDetailPage() {
       ? "bg-gold/80 text-black"
       : "bg-emerald-600/80 text-white";
 
+  const handleUnlockVideo = async (videoId: string) => {
+    console.log({ videoId });
+    try {
+      const res = await unlockVideoByOrderMutation({
+        video_id: videoId,
+      }).unwrap();
+
+      if (res.status === "success") {
+        toast.success(res?.data?.detail);
+        console.log(res);
+        setTimeout(() => {
+          window.open(res?.data?.approval_url, "_blank");
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Error unlocking video:", error);
+    }
+  };
+
   return (
     <div className='mx-auto container px-4 py-8 lg:px-8'>
       {/* Video Player */}
@@ -67,11 +91,12 @@ export default function VideoDetailPage() {
               src={video.thumbnail}
               alt={video.title}
               fill
+              unoptimized
               className='object-cover'
               sizes='100vw'
               priority
             />
-            <span className='absolute right-4 top-4 rounded-md bg-black/50 px-3 py-1.5 text-sm font-medium text-gold italic backdrop-blur-sm'>
+            <span className='absolute right-4 top-4 rounded-md bg-black/50 px-3 py-1.5 text-sm font-semibold text-gold italic backdrop-blur-sm'>
               Preview Only
             </span>
             <div className='absolute inset-0 flex items-center justify-center cursor-pointer'>
@@ -219,17 +244,19 @@ export default function VideoDetailPage() {
               securely.
             </p>
             <button
-              onClick={() => {
-                setShowPayment(false);
-                alert("Redirecting to PayPal...");
-              }}
-              className='btn-gold mt-6 w-full py-3 text-sm'
+              onClick={() => handleUnlockVideo(video.id)}
+              disabled={isUnlockingVideo}
+              className='btn-gold mt-6 w-full py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              Pay with PayPal — ${video.price}
+              Pay with PayPal — ${video.price}{" "}
+              {isUnlockingVideo && (
+                <Loader className='animate-spin' size={16} />
+              )}
             </button>
             <button
               onClick={() => setShowPayment(false)}
-              className='mt-3 w-full py-2 text-sm text-muted hover:text-foreground transition-colors'
+              disabled={isUnlockingVideo}
+              className='mt-3 w-full py-2 text-sm text-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
               Cancel
             </button>
