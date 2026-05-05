@@ -44,7 +44,11 @@ export const videoAPI = baseAPI.injectEndpoints({
 
     // user purchased videos
     getMyPurchasedVideos: builder.query({
-      query: () => "/videos/my-unlocked/",
+      query: (params) => ({
+        url: "/videos/my-unlocked/",
+        method: "GET",
+        params,
+      }),
       providesTags: ["Video"],
     }),
   }),

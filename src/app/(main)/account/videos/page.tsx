@@ -35,6 +35,7 @@ export default function MyVideosPage() {
   // RTK Query with pagination
   const { data: myVideosData, isLoading } = useGetMyPurchasedVideosQuery({
     page: currentPage,
+    page_size: 8,
   });
 
   const videos = myVideosData?.data || [];
@@ -79,7 +80,7 @@ export default function MyVideosPage() {
             </div>
           ) : (
             <>
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {videos.map((video: PurchasedVideo) => (
                   <Link
                     href={`/video/${video.slug}`}
