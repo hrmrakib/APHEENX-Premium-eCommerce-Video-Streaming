@@ -11,11 +11,23 @@ import {
 } from "@/redux/features/admin/productPAI";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useGetProductCategoriesQuery } from "@/redux/features/product/productAPI";
+
+interface ICat {
+  id: number;
+  name: string;
+  slug: string;
+}
 
 export default function AddNewProductPage() {
   const router = useRouter();
   const [createProduct, { isLoading }] = useCreateProductMutation();
   const [createProductCategoryMutation] = useCreateProductCategoryMutation();
+  const { data: categoriesData } = useGetProductCategoriesQuery({});
+
+  const categories = categoriesData?.data || [];
+
+  console.log({ categories });
 
   // 1. Unified State for Text Fields
   const [formData, setFormData] = useState({
@@ -211,12 +223,16 @@ export default function AddNewProductPage() {
               <option value='' className='bg-background text-white'>
                 Select category
               </option>
-              <option value='1' className='bg-background text-white'>
-                Accessories
-              </option>
-              <option value='2' className='bg-background text-white'>
-                Fashion
-              </option>
+              {categories?.map((cat: ICat) => (
+                <option
+                  key={cat.id}
+                  value={cat.id}
+                  className='bg-background text-white'
+                >
+                  {cat.name}
+                </option>
+              ))}
+
               <option
                 value='custom'
                 className='bg-background text-yellow-500 font-bold'

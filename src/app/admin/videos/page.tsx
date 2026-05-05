@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2 } from "lucide-react";
-import { useGetVideosQuery } from "@/redux/features/admin/videoAPI";
+import { Plus, Pencil, Trash2, Loader2, AlertTriangle } from "lucide-react";
+import {
+  useDeleteVideoMutation,
+  useGetVideosQuery,
+} from "@/redux/features/admin/videoAPI";
 import GlobalPagination from "@/components/pagination/GlobalPagination";
+import { toast } from "sonner";
 
 export interface Video {
   id: number;
@@ -70,10 +75,16 @@ const VideoTableSkeleton = () => (
 
 export default function AdminVideosPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [videoToDelete, setVideoToDelete] = useState<{
+    slug: string;
+    title: string;
+  } | null>(null);
 
   const { data: videosData, isLoading } = useGetVideosQuery({
     page: currentPage,
   });
+  const [deleteVideo, { isLoading: isDeleting }] = useDeleteVideoMutation();
 
   const videos = (videosData?.data as Video[]) || [];
   const meta = videosData?.meta;
@@ -83,8 +94,27 @@ export default function AdminVideosPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const openDeleteModal = (video: Video) => {
+    setVideoToDelete({ slug: video.slug, title: video.title });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!videoToDelete) return;
+
+    try {
+      await deleteVideo(videoToDelete.slug).unwrap();
+      toast.success("Video deleted successfully");
+      setIsDeleteModalOpen(false);
+      setVideoToDelete(null);
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to delete video");
+    }
+  };
+
   return (
-    <div className='space-y-6'>
+    <div className='space-y-6 relative'>
+      {/* Header */}
       <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
         <div>
           <h1 className='text-2xl font-bold text-white mb-1'>Videos</h1>
@@ -101,6 +131,7 @@ export default function AdminVideosPage() {
         </Link>
       </div>
 
+      {/* Table */}
       <div className='bg-background rounded-xl border border-white/10 overflow-hidden'>
         <div className='overflow-x-auto'>
           <table className='w-full text-left text-sm text-white/80'>
@@ -174,7 +205,10 @@ export default function AdminVideosPage() {
                         >
                           <Pencil size={18} />
                         </Link>
-                        <button className='text-red-500/80 hover:text-red-500 transition-colors'>
+                        <button
+                          onClick={() => openDeleteModal(video)}
+                          className='text-red-500/80 hover:text-red-500 transition-colors'
+                        >
                           <Trash2 size={18} />
                         </button>
                       </div>
@@ -187,12 +221,57 @@ export default function AdminVideosPage() {
         </div>
       </div>
 
+      {/* Pagination */}
       {!isLoading && (
         <GlobalPagination
           currentPage={currentPage}
           totalPages={meta?.total_pages || 1}
           onPageChange={handlePageChange}
         />
+      )}
+
+      {/* Delete Warning Modal */}
+      {isDeleteModalOpen && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm'>
+          <div className='bg-[#111] border border-white/10 p-6 rounded-2xl max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200'>
+            <div className='flex flex-col items-center text-center'>
+              <div className='w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4'>
+                <AlertTriangle className='text-red-500' size={24} />
+              </div>
+              <h3 className='text-white text-lg font-bold mb-2'>
+                Delete Video?
+              </h3>
+              <p className='text-white/60 text-sm mb-6'>
+                Are you sure you want to delete{" "}
+                <span className='text-white font-semibold'>
+                  &quot;{videoToDelete?.title}&quot;
+                </span>
+                ? This action cannot be undone.
+              </p>
+
+              <div className='flex gap-3 w-full'>
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  disabled={isDeleting}
+                  className='flex-1 px-4 py-2 rounded-lg border border-white/10 text-white font-medium hover:bg-white/5 transition-colors disabled:opacity-50'
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className='flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50'
+                >
+                  {isDeleting ? (
+                    <Loader2 size={18} className='animate-spin' />
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
