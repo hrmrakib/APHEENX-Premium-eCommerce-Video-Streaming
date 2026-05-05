@@ -49,7 +49,7 @@ export default function Footer() {
             <ul className='space-y-2'>
               <li>
                 <Link
-                  href='#'
+                  href='/video'
                   className='text-sm text-muted hover:text-foreground transition-colors'
                 >
                   Videos
@@ -57,7 +57,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href='#'
+                  href='/wishlist'
                   className='text-sm text-muted hover:text-foreground transition-colors'
                 >
                   Wishlist
@@ -72,7 +72,7 @@ export default function Footer() {
             <ul className='space-y-2'>
               <li>
                 <Link
-                  href='#'
+                  href='/account'
                   className='text-sm text-muted hover:text-foreground transition-colors'
                 >
                   Profile
@@ -80,7 +80,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href='#'
+                  href='/account/orders'
                   className='text-sm text-muted hover:text-foreground transition-colors'
                 >
                   Orders

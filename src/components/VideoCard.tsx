@@ -21,6 +21,8 @@ export default function VideoCard({ video }: { video: TVideo }) {
             muted
             loop
             playsInline
+            controlsList='nodownload'
+            onContextMenu={(e) => e.preventDefault()}
             className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
               video.thumbnail
                 ? "opacity-0 group-hover:opacity-100"

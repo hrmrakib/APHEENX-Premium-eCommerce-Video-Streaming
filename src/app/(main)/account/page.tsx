@@ -6,18 +6,23 @@ import Link from "next/link";
 import AccountSidebar from "@/components/AccountSidebar";
 import { getOrders } from "@/lib/orders";
 import { getPurchasedVideos } from "@/lib/orders";
-import { getWishlistCount } from "@/lib/wishlist";
 import type { Order } from "@/lib/orders";
+import { useProductWishlist } from "@/hooks/useProductWishlist";
+import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 
 export default function AccountDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [videoCount, setVideoCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
+
+  const { wishlistItems } = useProductWishlist();
+  const { wishlistItems: videoWishlistItems } = useVideoWishlist();
+
+  const wishlistCount = wishlistItems?.length + videoWishlistItems?.length;
 
   useEffect(() => {
     setOrders(getOrders());
     setVideoCount(getPurchasedVideos().length);
-    setWishlistCount(getWishlistCount());
+    // setWishlistCount(getWishlistCount());
   }, []);
 
   return (

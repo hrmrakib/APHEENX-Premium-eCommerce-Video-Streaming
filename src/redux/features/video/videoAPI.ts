@@ -42,15 +42,10 @@ export const videoAPI = baseAPI.injectEndpoints({
       providesTags: ["Video"],
     }),
 
-    // 5. Add Video (Secure)
-    addVideo: builder.mutation({
-      query: (newVideo) => ({
-        url: "/videos/",
-        method: "POST",
-        body: newVideo,
-      }),
-      // This replaces queryClient.invalidateQueries({ queryKey: ["videos"] })
-      invalidatesTags: ["Video"],
+    // user purchased videos
+    getMyPurchasedVideos: builder.query({
+      query: () => "/videos/my-unlocked/",
+      providesTags: ["Video"],
     }),
   }),
 });
@@ -63,7 +58,7 @@ export const {
   useGetVideosCategoriesQuery,
   useGetNewestVideosQuery,
   useGetMostViewedVideosQuery,
-  useAddVideoMutation,
+  useGetMyPurchasedVideosQuery,
 } = videoAPI;
 
 export default videoAPI;

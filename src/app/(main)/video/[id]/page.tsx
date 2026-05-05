@@ -8,7 +8,7 @@ import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
 import {
   useGetVideoByIdQuery,
-  useGetVideoStreamQuery,
+  // useGetVideoStreamQuery,
 } from "@/redux/features/video/videoAPI";
 import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 
@@ -19,9 +19,9 @@ export default function VideoDetailPage() {
   const { toggleWishlist, isInWishlist } = useVideoWishlist();
   const { data: videoData, isLoading, isError } = useGetVideoByIdQuery(params);
   const video = videoData?.data;
-  const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id);
+  // const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id);
 
-  console.log({ getVideoStreamData });
+  // console.log({ getVideoStreamData });
 
   if (isLoading) {
     return (
@@ -56,6 +56,8 @@ export default function VideoDetailPage() {
             src={video.trailer}
             poster={video.thumbnail}
             controls
+            controlsList='nodownload'
+            onContextMenu={(e) => e.preventDefault()}
             className='h-full w-full object-cover'
           />
         ) : (
@@ -120,7 +122,27 @@ export default function VideoDetailPage() {
 
         {/* Actions */}
         <div className='mt-6 flex flex-wrap gap-3'>
-          {!video.is_unlocked && (
+          {video.is_unlocked ? (
+            <button
+              disabled
+              className='flex items-center gap-2 rounded-lg bg-surface-light px-4 py-2.5 text-sm font-semibold text-green-500 border border-green-500 cursor-default'
+            >
+              <svg
+                className='h-4 w-4'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  d='M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z'
+                />
+              </svg>
+              Video Unlocked
+            </button>
+          ) : (
             <button
               onClick={() => setShowPayment(true)}
               className='btn-gold flex items-center gap-2 text-sm'
@@ -141,6 +163,7 @@ export default function VideoDetailPage() {
               Unlock Full Video — ${video.price}
             </button>
           )}
+
           <button
             // onClick={toggleWishlist}
             onClick={() => toggleWishlist(video)}

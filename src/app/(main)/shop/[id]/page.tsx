@@ -92,7 +92,10 @@ export default function ShopDetailPage() {
     addToCart(productWithoutRelated);
   };
 
-  const handleBuyNow = () => {};
+  const handleBuyNow = () => {
+    addToCart(productWithoutRelated);
+    router.push("/checkout");
+  };
 
   const handleToggleWishlist = () => {
     toggleWishlist(productWithoutRelated);
