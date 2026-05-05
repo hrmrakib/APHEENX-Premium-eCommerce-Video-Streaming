@@ -4,16 +4,17 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { addToCart } from "@/lib/cart";
-import type { Video } from "@/lib/data";
 import { useProductWishlist } from "@/hooks/useProductWishlist";
+import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 
 export default function WishlistPage() {
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
 
   const { wishlistItems, removeFromWishlist } = useProductWishlist();
-
-  // Derive video wishlist from wishlistItems if needed
-  const wishlistVideos: Video[] = []; // keep if useProductWishlist doesn't handle videos
+  const {
+    wishlistItems: videoWishlistItems,
+    removeFromWishlist: removeVideoWishlist,
+  } = useVideoWishlist();
 
   const handleAddToCart = (productId: string) => {
     addToCart(productId);
@@ -27,7 +28,7 @@ export default function WishlistPage() {
     }, 2000);
   };
 
-  const isEmpty = wishlistItems.length === 0 && wishlistVideos.length === 0;
+  const isEmpty = wishlistItems.length === 0 && videoWishlistItems.length === 0;
 
   return (
     <div className='mx-auto container px-4 py-8 lg:px-8'>
@@ -155,42 +156,61 @@ export default function WishlistPage() {
           )}
 
           {/* Video Section */}
-          {wishlistVideos.length > 0 && (
+          {videoWishlistItems.length > 0 && (
             <section className='mt-12'>
-              <h2 className='text-lg font-bold text-gold italic mb-4'>Video</h2>
+              <h2 className='text-lg font-bold text-gold italic mb-4'>
+                Video Wishlist
+              </h2>
               <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-                {wishlistVideos.map((video) => (
+                {videoWishlistItems.map((video) => (
                   <div
                     key={video.id}
-                    className='overflow-hidden rounded-xl bg-surface-light border border-border'
+                    className='overflow-hidden rounded-xl bg-surface-light border border-border shadow-lg transition-transform hover:scale-[1.02]'
                   >
-                    <Link href={`/video/${video.id}`}>
+                    {/* Thumbnail / Link */}
+                    <Link href={`/video/${video.slug || video.id}`}>
                       <div className='relative aspect-video overflow-hidden bg-surface'>
                         <Image
                           src={video.thumbnail}
                           alt={video.title}
                           fill
+                          unoptimized
                           className='object-cover'
                           sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
                         />
-                        {video.featured && (
-                          <span className='absolute left-3 top-3 rounded-md bg-gold/90 px-2.5 py-1 text-[10px] font-bold text-black'>
+                        {/* Featured Badge */}
+                        {video.is_featured && (
+                          <span className='absolute left-3 top-3 rounded-md bg-gold/90 px-2.5 py-1 text-[10px] font-bold text-black uppercase tracking-wider'>
                             Featured
                           </span>
                         )}
-                      </div>
-                    </Link>
-                    <div className='p-4'>
-                      <div className='flex items-center justify-between'>
-                        <h3 className='text-base font-bold text-foreground italic truncate'>
-                          {video.title}
-                        </h3>
-                        <span className='text-base font-bold text-gold'>
-                          ${video.price.toFixed(2)}
+                        {/* Duration Overlay */}
+                        <span className='absolute bottom-2 right-2 rounded bg-black/70 px-2 py-0.5 text-[10px] text-white'>
+                          {video.duration_display}
                         </span>
                       </div>
-                      <div className='mt-3 flex gap-2'>
-                        <button className='flex-1 flex items-center justify-center gap-2 rounded-lg gold-gradient py-2.5 text-sm font-semibold text-black'>
+                    </Link>
+
+                    <div className='p-4'>
+                      <div className='flex items-start justify-between gap-2'>
+                        <h3 className='text-base font-bold text-foreground italic truncate flex-1'>
+                          {video.title}
+                        </h3>
+                        <span className='text-base font-bold text-gold shrink-0'>
+                          ${parseFloat(video.price).toFixed(2)}
+                        </span>
+                      </div>
+
+                      <p className='mt-1 text-xs text-muted line-clamp-1'>
+                        {video.category_name || video.category?.name}
+                      </p>
+
+                      <div className='mt-4 flex gap-2'>
+                        {/* Buy/Add to Cart Button */}
+                        <button
+                          // onClick={() => handleAddToCart(video)} // Add your cart logic here
+                          className='flex-1 flex items-center justify-center gap-2 rounded-lg gold-gradient py-2.5 text-sm font-semibold text-black hover:opacity-90 transition-opacity'
+                        >
                           <svg
                             className='h-4 w-4'
                             fill='none'
@@ -204,13 +224,14 @@ export default function WishlistPage() {
                               d='M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z'
                             />
                           </svg>
-                          Add
+                          Buy Now
                         </button>
+
+                        {/* Remove Button */}
                         <button
-                          onClick={() =>
-                            removeFromWishlist(`video-${video.id}`)
-                          }
+                          onClick={() => removeVideoWishlist(video.id)}
                           className='flex items-center justify-center rounded-lg border border-danger/30 p-2.5 text-danger hover:bg-danger/10 transition-colors'
+                          title='Remove from wishlist'
                         >
                           <svg
                             className='h-4 w-4'
@@ -227,9 +248,10 @@ export default function WishlistPage() {
                           </svg>
                         </button>
                       </div>
-                      <div className='mt-3 flex items-center justify-between text-xs text-muted'>
-                        <span>{video.duration}</span>
-                        <span>{video.views.toLocaleString()} Views</span>
+
+                      <div className='mt-3 flex items-center justify-between text-[10px] uppercase tracking-tighter text-muted-foreground font-medium'>
+                        <span>{video.views_count.toLocaleString()} Views</span>
+                        <span>ID: #{video.id}</span>
                       </div>
                     </div>
                   </div>

@@ -16,9 +16,7 @@ export interface CartProduct {
   status: string;
   created_at: string;
   updated_at: string;
-  // This matches your localStorage data exactly
   images: { image: string }[];
-  // We make this optional or derived so it doesn't break the code
   primary_image?: string;
 }
 

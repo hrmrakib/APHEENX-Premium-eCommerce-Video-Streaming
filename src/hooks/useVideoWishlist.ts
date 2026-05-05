@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from "react";
 
@@ -5,20 +6,19 @@ export interface WishlistVideo {
   id: number;
   title: string;
   slug: string;
-  category: {
-    id: number;
-    name: string;
-    slug: string;
-  };
+  category: any; // Can be object or ID depending on your API
+  category_name?: string;
   price: string;
   thumbnail: string;
   trailer: string;
-  short_description: string;
+  short_description?: string;
+  description?: string;
   duration_display: string;
   views_count: number;
   is_featured: boolean;
   is_unlocked: boolean;
   created_at: string;
+  updated_at?: string;
 }
 
 const WISHLIST_KEY = "video_wishlist";
@@ -39,7 +39,6 @@ function writeWishlist(items: WishlistVideo[]): void {
 export function useVideoWishlist() {
   const [wishlistItems, setWishlistItems] = useState<WishlistVideo[]>([]);
 
-  // Load from localStorage on mount
   useEffect(() => {
     setWishlistItems(readWishlist());
   }, []);
@@ -51,24 +50,28 @@ export function useVideoWishlist() {
 
   /**
    * Toggles a video in the wishlist:
-   * Removes it if already there, adds it if it's missing.
+   * Strips related_videos if adding, removes if already present.
    */
   const toggleWishlist = useCallback(
-    (video: WishlistVideo) => {
+    (video: any) => {
       const current = readWishlist();
       const isAlreadyInWishlist = current.some((item) => item.id === video.id);
 
       if (isAlreadyInWishlist) {
+        // Remove logic
         const next = current.filter((item) => item.id !== video.id);
         persist(next);
       } else {
-        persist([...current, video]);
+        // Add logic:
+        // Destructure to extract and discard related_videos
+        const { related_videos, ...mainVideoObject } = video;
+
+        persist([...current, mainVideoObject as WishlistVideo]);
       }
     },
     [persist],
   );
 
-  /** Explicitly remove a video from wishlist */
   const removeFromWishlist = useCallback(
     (videoId: number) => {
       const next = readWishlist().filter((item) => item.id !== videoId);
@@ -77,13 +80,11 @@ export function useVideoWishlist() {
     [persist],
   );
 
-  /** Check if a specific video ID is in the wishlist */
   const isInWishlist = useCallback(
     (videoId: number) => wishlistItems.some((item) => item.id === videoId),
     [wishlistItems],
   );
 
-  /** Clear all videos from the wishlist */
   const clearWishlist = useCallback(() => {
     persist([]);
   }, [persist]);
