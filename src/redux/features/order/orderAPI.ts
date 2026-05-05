@@ -12,9 +12,10 @@ const orderAPI = baseAPI.injectEndpoints({
     }),
 
     getMyOrders: build.query({
-      query: () => ({
+      query: (params) => ({
         url: "/orders/",
         method: "GET",
+        params,
       }),
       providesTags: ["Order"],
     }),
