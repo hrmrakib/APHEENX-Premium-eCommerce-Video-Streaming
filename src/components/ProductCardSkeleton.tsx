@@ -2,7 +2,7 @@ export default function ProductCardSkeleton() {
   return (
     <div className='overflow-hidden rounded-xl bg-surface-light border border-border'>
       {/* Image */}
-      <div className='relative h-64 bg-surface animate-pulse' />
+      <div className='relative h-64 bg-[#9a9797ca] animate-pulse' />
 
       {/* Info */}
       <div className='p-4 space-y-3'>
