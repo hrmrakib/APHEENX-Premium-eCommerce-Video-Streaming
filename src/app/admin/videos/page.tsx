@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Loader2, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader, AlertTriangle } from "lucide-react";
 import {
   useDeleteVideoMutation,
   useGetVideosQuery,
@@ -263,7 +263,7 @@ export default function AdminVideosPage() {
                   className='flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50'
                 >
                   {isDeleting ? (
-                    <Loader2 size={18} className='animate-spin' />
+                    <Loader size={18} className='animate-spin' />
                   ) : (
                     "Delete"
                   )}

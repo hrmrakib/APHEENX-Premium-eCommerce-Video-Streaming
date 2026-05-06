@@ -122,7 +122,7 @@ export default function Navbar() {
 
           {/* User */}
           <Link
-            href={user ? "/account" : "/signin"}
+            href={user ? "/account" : "/login"}
             className='p-2 text-foreground/70 hover:text-foreground transition-colors'
           >
             <svg

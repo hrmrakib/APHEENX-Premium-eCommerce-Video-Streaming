@@ -24,7 +24,6 @@ export default function ForgotPasswordPage() {
 
     try {
       const res = await forgotPasswordMutation({ email });
-      
     } catch (error) {}
   };
 
@@ -65,7 +64,7 @@ export default function ForgotPasswordPage() {
             </p>
             <div className='mt-6'>
               <Link
-                href='/signin'
+                href='/login'
                 className='btn-gold w-full py-3 text-sm inline-block text-center'
               >
                 Back to Sign In
@@ -122,7 +121,7 @@ export default function ForgotPasswordPage() {
 
             <div className='text-center mt-6'>
               <Link
-                href='/signin'
+                href='/login'
                 className='text-sm text-gold hover:text-gold-light transition-colors flex items-center justify-center gap-2'
               >
                 <svg

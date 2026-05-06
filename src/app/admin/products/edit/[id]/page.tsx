@@ -5,7 +5,7 @@
 
 import { useState, ChangeEvent, useEffect } from "react";
 import Link from "next/link";
-import { Upload, Minus, Plus, X, Loader2 } from "lucide-react";
+import { Upload, Minus, Plus, X, Loader } from "lucide-react";
 import {
   useAddProductImageMutation,
   useCreateProductCategoryMutation,
@@ -205,7 +205,7 @@ export default function AddNewProductPage() {
   if (id && isFetchingProduct)
     return (
       <div className='flex justify-center p-10'>
-        <Loader2 className='animate-spin text-yellow-500' />
+        <Loader className='animate-spin text-yellow-500' />
       </div>
     );
 

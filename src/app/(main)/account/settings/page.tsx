@@ -4,7 +4,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import AccountSidebar from "@/components/AccountSidebar";
-import { Camera, User, Check, CircleUserRound, Loader2 } from "lucide-react";
+import { Camera, User, Check, CircleUserRound, Loader } from "lucide-react";
 import Image from "next/image";
 import { useUpdateUserProfileMutation } from "@/redux/features/user/userAPI";
 import { useAuth } from "@/hooks/useAuth"; // Assuming you have this to get current user
@@ -179,7 +179,7 @@ export default function SettingsPage() {
                       className='flex items-center gap-2 bg-gold hover:bg-gold-dark text-black font-bold py-2.5 px-8 rounded-lg transition-all active:scale-95 text-sm disabled:opacity-70 disabled:cursor-not-allowed'
                     >
                       {isLoading ? (
-                        <Loader2 size={18} className='animate-spin' />
+                        <Loader size={18} className='animate-spin' />
                       ) : (
                         <Check size={18} />
                       )}

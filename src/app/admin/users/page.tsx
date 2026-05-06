@@ -14,27 +14,23 @@ interface IUser {
 }
 
 export default function AdminUsersPage() {
-  // 1. Manage current page state
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 2. Pass pagination params to the hook (adjust keys based on your API, e.g., page/limit)
   const {
     data: userData,
     isLoading,
     isFetching,
   } = useGetAllUsersQuery({
     page: currentPage,
-    limit: 1,
+    page_size: 10,
   });
 
   const users: IUser[] = userData?.data || [];
 
-  // 3. Placeholder for total pages until your backend provides meta data
-  const totalPages = 8;
+  const totalPages = userData?.meta?.total_pages || 1;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Optional: scroll to top when page changes
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

@@ -38,10 +38,10 @@ export default function ResetPasswordPage() {
     setTimeout(() => {
       setIsSubmitting(false);
       setSuccess(true);
-      
+
       // Redirect to login after successful reset
       setTimeout(() => {
-        router.push("/signin");
+        router.push("/login");
       }, 3000);
     }, 1500);
   };
@@ -51,18 +51,32 @@ export default function ResetPasswordPage() {
       <div className='w-full max-w-md'>
         <div className='card-border p-8 bg-surface/50 text-center'>
           <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/20'>
-            <svg className="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className='h-8 w-8 text-success'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth='2'
+                d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+              />
             </svg>
           </div>
           <h1 className='text-2xl font-bold text-foreground'>
             Password Reset Successfully
           </h1>
           <p className='mt-2 text-sm text-muted'>
-            Your password has been updated. You will be redirected to the sign in page shortly.
+            Your password has been updated. You will be redirected to the sign
+            in page shortly.
           </p>
           <div className='mt-8'>
-            <Link href='/signin' className='btn-gold w-full py-3 text-sm inline-block text-center'>
+            <Link
+              href='/login'
+              className='btn-gold w-full py-3 text-sm inline-block text-center'
+            >
               Sign In Now
             </Link>
           </div>

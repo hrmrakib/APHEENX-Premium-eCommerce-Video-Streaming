@@ -90,7 +90,8 @@ export default function AccountSidebar() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const confirmSignOut = () => {
-    router.push("/signin");
+    localStorage.removeItem("access_token");
+    router.push("/login");
   };
 
   console.log({ user });
