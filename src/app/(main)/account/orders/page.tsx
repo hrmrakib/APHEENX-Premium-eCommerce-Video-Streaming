@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import AccountSidebar from "@/components/AccountSidebar";
-import { useGetMyOrdersQuery } from "@/redux/features/order/orderAPI";
 import GlobalPagination from "@/components/pagination/GlobalPagination";
 import { RoleRedirect } from "@/components/auth/RoleRedirect";
+import { useGetAllOrdersQuery } from "@/redux/features/admin/orderAPI";
 
 export interface OrderItem {
   id: number;
@@ -42,7 +42,7 @@ export interface Order {
 export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: orderData, isLoading } = useGetMyOrdersQuery({
+  const { data: orderData, isLoading } = useGetAllOrdersQuery({
     page: currentPage,
     page_size: 6,
   });

@@ -1,6 +1,7 @@
 import baseAPI from "@/redux/api/api";
 
 const productAdminAPI = baseAPI.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getAllProducts: builder.query({
       query: () => "/products/",

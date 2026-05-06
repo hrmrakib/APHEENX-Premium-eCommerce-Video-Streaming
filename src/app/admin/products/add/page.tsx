@@ -28,8 +28,6 @@ export default function AddNewProductPage() {
 
   const categories = categoriesData?.data || [];
 
-  console.log({ categories });
-
   // 1. Unified State for Text Fields
   const [formData, setFormData] = useState({
     name: "",

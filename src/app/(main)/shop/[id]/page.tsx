@@ -10,9 +10,9 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import SectionHeader from "@/components/SectionHeader";
-import { useGetProductByIdQuery } from "@/redux/features/product/productAPI";
 import { useProductCart } from "@/hooks/useProductCart";
 import { useProductWishlist } from "@/hooks/useProductWishlist";
+import { useGetProductByIdQuery } from "@/redux/features/admin/productPAI";
 
 const ShopDetailSkeleton = () => {
   return (

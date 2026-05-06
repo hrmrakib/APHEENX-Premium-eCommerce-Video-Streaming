@@ -5,11 +5,9 @@ import ProductCard from "@/components/ProductCard";
 import { TProduct } from "@/types/product.types";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { useDebounce } from "@/hooks/useDebounce";
-import {
-  useGetProductCategoriesQuery,
-  useGetProductsQuery,
-} from "@/redux/features/product/productAPI";
+import { useGetProductCategoriesQuery } from "@/redux/features/product/productAPI";
 import GlobalPagination from "@/components/pagination/GlobalPagination";
+import { useGetAllProductsQuery } from "@/redux/features/admin/productPAI";
 
 type TCategory = {
   id: string;
@@ -38,7 +36,7 @@ export default function ShopPage() {
   const searchQuery = useDebounce(search);
   const [page, setPage] = useState(1);
 
-  const { data: productsData, isFetching } = useGetProductsQuery({
+  const { data: productsData, isFetching } = useGetAllProductsQuery({
     search: searchQuery,
     ...(activeTab ? tabFilters[activeTab] : {}),
     category__slug: category === "all" ? undefined : category,

@@ -2,13 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  useGetVideosCategoriesQuery,
-  useGetVideosQuery,
-} from "@/redux/features/video/videoAPI";
+import { useGetVideosCategoriesQuery } from "@/redux/features/video/videoAPI";
 import { useDebounce } from "@/hooks/useDebounce";
 import VideoCard from "@/components/VideoCard";
 import GlobalPagination from "@/components/pagination/GlobalPagination";
+import { useGetVideosQuery } from "@/redux/features/admin/videoAPI";
 
 // 1. Fixed Interfaces
 interface ICategory {

@@ -9,16 +9,13 @@ import { Upload, Minus, Plus, X, Loader } from "lucide-react";
 import {
   useAddProductImageMutation,
   useCreateProductCategoryMutation,
-  // useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductImageMutation,
+  useGetProductByIdQuery,
 } from "@/redux/features/admin/productPAI";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  useGetProductByIdQuery,
-  useGetProductCategoriesQuery,
-} from "@/redux/features/product/productAPI";
+import { useGetProductCategoriesQuery } from "@/redux/features/product/productAPI";
 import { RoleRedirect } from "@/components/auth/RoleRedirect";
 
 export interface ProductImage {

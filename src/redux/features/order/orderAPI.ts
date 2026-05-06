@@ -10,17 +10,8 @@ const orderAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: ["Order"],
     }),
-
-    getMyOrders: build.query({
-      query: (params) => ({
-        url: "/orders/",
-        method: "GET",
-        params,
-      }),
-      providesTags: ["Order"],
-    }),
   }),
 });
 
-export const { useCreateOrderMutation, useGetMyOrdersQuery } = orderAPI;
+export const { useCreateOrderMutation } = orderAPI;
 export default orderAPI;

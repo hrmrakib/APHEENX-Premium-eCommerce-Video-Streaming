@@ -7,7 +7,6 @@ import { useParams, useRouter } from "next/navigation";
 import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
 import {
-  useGetVideoByIdQuery,
   useUnlockVideoByOrderMutation,
   useGetVideoStreamQuery,
 } from "@/redux/features/video/videoAPI";
@@ -15,6 +14,7 @@ import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useGetVideoQuery } from "@/redux/features/admin/videoAPI";
 
 export default function VideoDetailPage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function VideoDetailPage() {
   const { toggleWishlist, isInWishlist } = useVideoWishlist();
   const [unlockVideoByOrderMutation, { isLoading: isUnlockingVideo }] =
     useUnlockVideoByOrderMutation();
-  const { data: videoData, isLoading, isError } = useGetVideoByIdQuery(params);
+  const { data: videoData, isLoading, isError } = useGetVideoQuery(params);
 
   const video = videoData?.data;
 

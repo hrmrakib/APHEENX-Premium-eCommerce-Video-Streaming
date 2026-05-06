@@ -16,12 +16,10 @@ import NewestVideoCard from "@/components/NewestVideoCard";
 import {
   useGetMostViewedVideosQuery,
   useGetNewestVideosQuery,
-  useGetVideosQuery,
 } from "@/redux/features/video/videoAPI";
-import {
-  useGetBestDealsQuery,
-  useGetProductsQuery,
-} from "@/redux/features/product/productAPI";
+import { useGetBestDealsQuery } from "@/redux/features/product/productAPI";
+import { useGetAllProductsQuery } from "@/redux/features/admin/productPAI";
+import { useGetVideosQuery } from "@/redux/features/admin/videoAPI";
 
 export default function HomePage() {
   const { data: featuredVideosData, isLoading: featuredVideosPending } =
@@ -29,7 +27,7 @@ export default function HomePage() {
       is_featured: true,
     });
   const { data: featuredProductsData, isLoading: featuredProductsPending } =
-    useGetProductsQuery({
+    useGetAllProductsQuery({
       is_featured: true,
     });
 
