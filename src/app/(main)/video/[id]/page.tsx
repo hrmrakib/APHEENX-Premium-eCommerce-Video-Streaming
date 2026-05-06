@@ -3,30 +3,37 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
 import {
   useGetVideoByIdQuery,
   useUnlockVideoByOrderMutation,
-  // useGetVideoStreamQuery,
+  useGetVideoStreamQuery,
 } from "@/redux/features/video/videoAPI";
 import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function VideoDetailPage() {
+  const router = useRouter();
   const params = useParams().id as string;
   const [showPayment, setShowPayment] = useState(false);
+  const { user } = useAuth();
 
   const { toggleWishlist, isInWishlist } = useVideoWishlist();
   const [unlockVideoByOrderMutation, { isLoading: isUnlockingVideo }] =
     useUnlockVideoByOrderMutation();
   const { data: videoData, isLoading, isError } = useGetVideoByIdQuery(params);
   const video = videoData?.data;
-  // const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id);
+  const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id, {
+    skip: !video?.is_unlocked,
+  });
 
-  // console.log({ getVideoStreamData });
+  console.log({ getVideoStreamData });
+
+  console.log({ video });
 
   if (isLoading) {
     return (
@@ -52,14 +59,18 @@ export default function VideoDetailPage() {
       : "bg-emerald-600/80 text-white";
 
   const handleUnlockVideo = async (videoId: string) => {
-    console.log({ videoId });
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
     try {
       const res = await unlockVideoByOrderMutation({
         video_id: videoId,
       }).unwrap();
 
       if (res.status === "success") {
-        toast.success(res?.data?.detail);
+        toast.success(res?.message || res?.data?.detail);
         console.log(res);
         setTimeout(() => {
           window.open(res?.data?.approval_url, "_blank");

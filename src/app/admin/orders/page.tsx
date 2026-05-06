@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import { useGetAllOrdersQuery } from "@/redux/features/admin/orderAPI";
 import { RoleRedirect } from "@/components/auth/RoleRedirect";
+import { useState } from "react";
 
 export interface IOrderItem {
   id: number;
@@ -84,17 +85,61 @@ export const getStatusColor = (status: string) => {
 };
 
 export default function AdminOrdersPage() {
-  const { data: orderData, isLoading } = useGetAllOrdersQuery({});
+  const [orderStatus, setOrderStatus] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const { data: orderData, isLoading } = useGetAllOrdersQuery({
+    order_status: orderStatus,
+    payment_status: paymentStatus,
+  });
   const orders: IOrder[] = orderData?.data || [];
 
   return (
     <RoleRedirect allowedRole='ADMIN'>
       <div className='space-y-6'>
-        <div>
-          <h1 className='text-2xl font-bold text-white mb-1'>Orders</h1>
-          <p className='text-white/60 text-sm'>
-            Manage and track customer orders
-          </p>
+        <div className='flex items-center justify-between'>
+          <div>
+            <h1 className='text-2xl font-bold text-white mb-1'>Orders</h1>
+            <p className='text-white/60 text-sm'>
+              Manage and track customer orders
+            </p>
+          </div>
+
+          <div className='flex items-center gap-6'>
+            <div className='space-y-4'>
+              <label className='text-xs text-[#ffffff] font-medium'>
+                Payment Status
+              </label>
+              <select
+                value={paymentStatus}
+                onChange={(e) => setPaymentStatus(e.target.value)}
+                className='w-full bg-black border border-[#141413]! rounded-lg px-3 py-2 text-sm outline-none  focus:border-[#D4A843] capitalize pt-2.5'
+              >
+                <option value=''>All</option>
+                <option value='pending'>Pending</option>
+                <option value='captured'>Captured</option>
+                <option value='failed'>Failed</option>
+                <option value='refunded'>Refunded</option>
+              </select>
+            </div>
+
+            <div className='space-y-2'>
+              <label className='text-xs text-[#ffffff] font-medium'>
+                Order Status
+              </label>
+              <select
+                value={orderStatus}
+                onChange={(e) => setOrderStatus(e.target.value)}
+                className='w-full bg-black border border-[#141413]! rounded-lg px-3 py-2 text-sm outline-none  focus:border-[#D4A843] capitalize'
+              >
+                <option value=''>All</option>
+                <option value='pending'>Pending</option>
+                <option value='processing'>Processing</option>
+                <option value='shipped'>Shipped</option>
+                <option value='delivered'>Delivered</option>
+                <option value='cancelled'>Cancelled</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div className='bg-[#0a0a0a] rounded-xl border border-white/10 overflow-hidden mt-6'>
@@ -102,6 +147,7 @@ export default function AdminOrdersPage() {
             <table className='w-full text-left text-sm text-white/80'>
               <thead className='bg-[#111] text-white/60 text-xs border-b border-white/10'>
                 <tr>
+                  <th className='px-6 py-4 font-medium'>Serial</th>
                   <th className='px-6 py-4 font-medium'>Order ID</th>
                   <th className='px-6 py-4 font-medium'>Customer</th>
                   <th className='px-6 py-4 font-medium'>Email</th>
@@ -115,11 +161,14 @@ export default function AdminOrdersPage() {
                 {isLoading ? (
                   <OrderTableSkeleton />
                 ) : (
-                  orders.map((order: IOrder) => (
+                  orders.map((order: IOrder, index: number) => (
                     <tr
                       key={order.id}
                       className='hover:bg-white/5 transition-colors'
                     >
+                      <td className='px-6 py-4 font-medium text-white'>
+                        {index + 1}
+                      </td>
                       <td className='px-6 py-4 font-medium text-white'>
                         #{order.id}
                       </td>

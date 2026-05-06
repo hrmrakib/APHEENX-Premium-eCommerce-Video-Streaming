@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
@@ -89,9 +90,9 @@ export default function OrderDetailsPage() {
         status: selectedStatus,
       }).unwrap();
       toast.success("Order status updated successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      toast.error("Failed to update status");
+      toast.error(error?.data?.message || "Failed to update status");
     }
   };
 

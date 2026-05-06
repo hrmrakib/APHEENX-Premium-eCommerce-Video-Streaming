@@ -16,7 +16,7 @@ export default function BestDealProductCard({
     : null;
 
   return (
-    <Link href={`/shop/${product.id}`} className='group block'>
+    <Link href={`/shop/${product.slug}`} className='group block'>
       <div className='overflow-hidden rounded-xl bg-surface-light border border-border transition-all duration-300 group-hover:border-gold/30 group-hover:shadow-lg group-hover:shadow-gold/5'>
         {/* Image */}
         <div className='relative h-64 overflow-hidden bg-surface'>

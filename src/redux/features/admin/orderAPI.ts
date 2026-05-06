@@ -3,7 +3,10 @@ import baseAPI from "@/redux/api/api";
 const orderAdminAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
     getAllOrders: builder.query({
-      query: () => "/orders/",
+      query: (params) => ({
+        url: "/orders/",
+        params,
+      }),
     }),
 
     getOrderById: builder.query({

@@ -176,7 +176,7 @@ export default function HomePage() {
       {/* Best Viewed Videos */}
       <section className='mx-auto container px-4 py-12 lg:px-8'>
         {mostViewedVideos?.length > 0 && (
-          <SectionHeader title='Best Viewed Videos' href='#' />
+          <SectionHeader title='Best Viewed Videos' href='/video' />
         )}
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {mostViewedVideosPending &&
@@ -213,7 +213,7 @@ export default function HomePage() {
       {/* Newest Videos */}
       <section className='mx-auto container px-4 pb-16 pt-12 lg:px-8'>
         {newestVideos?.length > 0 && (
-          <SectionHeader title='Newest Videos' href='#' />
+          <SectionHeader title='Newest Videos' href='/video' />
         )}
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {newestVideosPending &&
