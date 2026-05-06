@@ -109,7 +109,14 @@ export default function EditVideoPage() {
         submissionData.append("main_video", formData.main_video);
       }
 
-      await updateVideoMutation({ id, submissionData }).unwrap();
+      submissionData.forEach((d) => console.log(d.toString()));
+
+      const res = await updateVideoMutation({
+        id,
+        data: submissionData,
+      }).unwrap();
+
+      console.log({ res });
       toast.success("Video updated successfully!");
     } catch (error: any) {
       toast.error(
