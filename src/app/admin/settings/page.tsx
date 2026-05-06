@@ -3,12 +3,15 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useChangePasswordMutation } from "@/redux/features/auth/authAPI";
 import { useUpdateUserProfileMutation } from "@/redux/features/user/userAPI";
 import {
   AlertCircle,
   Camera,
   Check,
   CircleUserRound,
+  Eye,
+  EyeOff,
   Loader,
   LogOut,
   User,
@@ -26,8 +29,24 @@ export default function AdminSettingsPage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [passwordData, setPasswordData] = useState({
+    old_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    old: false,
+    new: false,
+    confirm: false,
+  });
+
+  const toggleVisibility = (field: keyof typeof showPasswords) => {
+    setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
 
   const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
+  const [changePasswordMutation, { isLoading: passwordChanging }] =
+    useChangePasswordMutation();
 
   useEffect(() => {
     if (user) {
@@ -35,6 +54,42 @@ export default function AdminSettingsPage() {
       setProfileImage(user.profile_image || null);
     }
   }, [user]);
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdatePassword = async () => {
+    const { old_password, new_password, confirm_password } = passwordData;
+
+    if (!old_password || !new_password || !confirm_password) {
+      toast.error("Please fill in all password fields");
+      return;
+    }
+
+    if (new_password !== confirm_password) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    try {
+      await changePasswordMutation({
+        old_password,
+        new_password,
+        new_password_confirm: confirm_password,
+      }).unwrap();
+
+      toast.success("Password updated successfully!");
+      setPasswordData({
+        old_password: "",
+        new_password: "",
+        confirm_password: "",
+      });
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update password");
+    }
+  };
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
@@ -316,42 +371,92 @@ export default function AdminSettingsPage() {
         <h2 className='text-yellow-500 font-semibold text-lg mb-6'>Security</h2>
 
         <div className='space-y-5'>
+          {/* Current Password */}
           <div className='space-y-2'>
             <label className='text-sm font-medium text-white/90'>
               Current Password
             </label>
-            <input
-              type='password'
-              placeholder='********'
-              className='w-full bg-transparent border border-white/20 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-yellow-500 transition-colors tracking-widest'
-            />
+            <div className='relative'>
+              <input
+                type={showPasswords.old ? "text" : "password"}
+                name='old_password'
+                value={passwordData.old_password}
+                onChange={handlePasswordChange}
+                placeholder='********'
+                className='w-full bg-transparent border border-white/20 rounded-lg px-4 py-2.5 pr-12 text-white text-sm outline-none focus:border-yellow-500 transition-colors tracking-widest'
+              />
+              <button
+                type='button'
+                onClick={() => toggleVisibility("old")}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors'
+              >
+                {showPasswords.old ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
+          {/* New Password */}
           <div className='space-y-2'>
             <label className='text-sm font-medium text-white/90'>
               New Password
             </label>
-            <input
-              type='password'
-              placeholder='********'
-              className='w-full bg-transparent border border-white/20 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-yellow-500 transition-colors tracking-widest'
-            />
+            <div className='relative'>
+              <input
+                type={showPasswords.new ? "text" : "password"}
+                name='new_password'
+                value={passwordData.new_password}
+                onChange={handlePasswordChange}
+                placeholder='********'
+                className='w-full bg-transparent border border-white/20 rounded-lg px-4 py-2.5 pr-12 text-white text-sm outline-none focus:border-yellow-500 transition-colors tracking-widest'
+              />
+              <button
+                type='button'
+                onClick={() => toggleVisibility("new")}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors'
+              >
+                {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
+          {/* Confirm Password */}
           <div className='space-y-2'>
             <label className='text-sm font-medium text-white/90'>
               Confirm New Password
             </label>
-            <input
-              type='password'
-              placeholder='********'
-              className='w-full bg-transparent border border-white/20 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-yellow-500 transition-colors tracking-widest'
-            />
+            <div className='relative'>
+              <input
+                type={showPasswords.confirm ? "text" : "password"}
+                name='confirm_password'
+                value={passwordData.confirm_password}
+                onChange={handlePasswordChange}
+                placeholder='********'
+                className='w-full bg-transparent border border-white/20 rounded-lg px-4 py-2.5 pr-12 text-white text-sm outline-none focus:border-yellow-500 transition-colors tracking-widest'
+              />
+              <button
+                type='button'
+                onClick={() => toggleVisibility("confirm")}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors'
+              >
+                {showPasswords.confirm ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </button>
+            </div>
           </div>
 
           <div className='pt-4'>
-            <button className='bg-gold hover:bg-gold-dark text-black font-semibold py-2.5 px-6 rounded-lg transition-colors text-sm'>
-              Change Password
+            <button
+              disabled={passwordChanging}
+              onClick={handleUpdatePassword}
+              className='flex items-center gap-2 bg-gold hover:bg-gold-dark text-black font-semibold py-2.5 px-6 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              {passwordChanging ? "Changing " : "Change Password"}{" "}
+              {passwordChanging && (
+                <Loader className='animate-spin' size={16} />
+              )}
             </button>
           </div>
         </div>

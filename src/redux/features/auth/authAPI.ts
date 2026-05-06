@@ -1,56 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { logout, setUser } from "./authSlice";
+import { setUser } from "./authSlice";
+import baseAPI from "@/redux/api/api";
 
-// --- Types ---
-export interface UserProfile {
-  id: number;
-  name: string;
-  email: string;
-  is_email_verified: boolean;
-  created_at: string;
-}
-
-export interface ApiResponse<T> {
-  status: string;
-  code: number;
-  message: string;
-  data: T;
-}
-
-export interface AuthData {
-  access: string;
-  user: UserProfile;
-}
-
-export type AuthResponse = ApiResponse<AuthData>;
-
-// --- API Slice ---
-export const authApi = createApi({
-  reducerPath: "authApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    prepareHeaders: (headers) => {
-      if (typeof window !== "undefined") {
-        const token = localStorage?.getItem("access_token");
-
-        if (token) {
-          headers.set("authorization", `Bearer ${token}`);
-        }
-      }
-      return headers;
-    },
-  }),
-  tagTypes: ["User"],
+const authAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation<AuthData, any>({
+    login: builder.mutation({
       query: (credentials) => ({
         url: "/auth/login/",
         method: "POST",
         body: credentials,
       }),
+
       // Transform the response to return only the 'data' object
-      transformResponse: (response: AuthResponse) => response.data,
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
@@ -90,9 +51,9 @@ export const authApi = createApi({
       }),
     }),
 
-    getMe: builder.query<UserProfile, void>({
+    getMe: builder.query({
       query: () => "/auth/me",
-      transformResponse: (response: ApiResponse<UserProfile>) => response.data,
+
       providesTags: ["User"],
     }),
 
@@ -111,6 +72,14 @@ export const authApi = createApi({
         }
       },
     }),
+
+    changePassword: builder.mutation({
+      query: (payload) => ({
+        url: "/auth/change-password/",
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -122,4 +91,6 @@ export const {
   useResendOtpMutation,
   useGetMeQuery,
   useLogoutMutation,
-} = authApi;
+  useChangePasswordMutation,
+} = authAPI;
+export default authAPI;
