@@ -4,9 +4,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { getCartCount } from "@/lib/cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useProductCart } from "@/hooks/useProductCart";
+import Image from "next/image";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -31,6 +31,8 @@ export default function Navbar() {
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
+
+  console.log({ user });
 
   return (
     <header className='sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md'>
@@ -123,21 +125,31 @@ export default function Navbar() {
           {/* User */}
           <Link
             href={user ? "/account" : "/login"}
-            className='p-2 text-foreground/70 hover:text-foreground transition-colors'
+            className='relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-border text-foreground/70 hover:text-foreground transition-colors'
           >
-            <svg
-              className='h-5 w-5'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='1.5'
-                d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z'
+            {user ? (
+              <Image
+                src={(user?.profile_image as string) || "/placeholder.png"}
+                alt={user?.name || "User"}
+                fill
+                unoptimized
+                className='object-cover'
               />
-            </svg>
+            ) : (
+              <svg
+                className='h-5 w-5'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='1.5'
+                  d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z'
+                />
+              </svg>
+            )}
           </Link>
 
           {/* Mobile hamburger */}
