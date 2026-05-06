@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser, userTrack } from "@/redux/features/auth/authSlice";
 import { toast } from "sonner";
+import { saveTokens } from "@/service/authService";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function SignInPage() {
       }
 
       if (response?.ok) {
+        await saveTokens(result?.data?.access);
         dispatch(userTrack());
         dispatch(
           setUser({

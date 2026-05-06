@@ -19,6 +19,7 @@ import {
   useGetProductByIdQuery,
   useGetProductCategoriesQuery,
 } from "@/redux/features/product/productAPI";
+import { RoleRedirect } from "@/components/auth/RoleRedirect";
 
 export interface ProductImage {
   id: number; // Added ID for deletion
@@ -210,239 +211,243 @@ export default function AddNewProductPage() {
     );
 
   return (
-    <div className='max-w-4xl space-y-8 pb-10'>
-      <div className='space-y-6'>
-        <h2 className='text-yellow-500 font-semibold text-lg border-b border-white/5 pb-2'>
-          {id ? "Edit Product" : "Product Information"}
-        </h2>
+    <RoleRedirect allowedRole='ADMIN'>
+      <div className='max-w-4xl space-y-8 pb-10'>
+        <div className='space-y-6'>
+          <h2 className='text-yellow-500 font-semibold text-lg border-b border-white/5 pb-2'>
+            {id ? "Edit Product" : "Product Information"}
+          </h2>
 
-        {/* Name */}
-        <div className='space-y-2'>
-          <label className='text-sm font-medium text-white/90'>
-            Product Name*
-          </label>
-          <input
-            name='name'
-            value={formData.name}
-            onChange={handleChange}
-            type='text'
-            className='input-field'
-          />
-        </div>
-
-        {/* Description */}
-        <div className='space-y-2'>
-          <label className='text-sm font-medium text-white/90'>
-            Product Description*
-          </label>
-          <textarea
-            name='description'
-            value={formData.description}
-            onChange={handleChange}
-            rows={4}
-            className='input-field resize-none'
-          />
-        </div>
-
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          {/* Price */}
+          {/* Name */}
           <div className='space-y-2'>
             <label className='text-sm font-medium text-white/90'>
-              Price (USD)*
+              Product Name*
             </label>
             <input
-              name='price'
-              value={formData.price}
+              name='name'
+              value={formData.name}
               onChange={handleChange}
-              type='number'
+              type='text'
               className='input-field'
             />
           </div>
 
-          {/* Stock */}
+          {/* Description */}
           <div className='space-y-2'>
             <label className='text-sm font-medium text-white/90'>
-              Stock Quantity*
+              Product Description*
             </label>
-            <div className='flex items-center'>
+            <textarea
+              name='description'
+              value={formData.description}
+              onChange={handleChange}
+              rows={4}
+              className='input-field resize-none'
+            />
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {/* Price */}
+            <div className='space-y-2'>
+              <label className='text-sm font-medium text-white/90'>
+                Price (USD)*
+              </label>
               <input
+                name='price'
+                value={formData.price}
+                onChange={handleChange}
                 type='number'
-                value={stock}
-                onChange={(e) => setStock(parseInt(e.target.value) || 0)}
-                className='input-field rounded-r-none border-r-0'
+                className='input-field'
               />
-              <div className='flex items-center border border-white/20 border-l-0 rounded-r-lg bg-background px-2 h-11.5'>
-                <button
-                  type='button'
-                  onClick={() => handleStockChange(-1)}
-                  className='p-1 text-white/60 hover:text-white'
-                >
-                  <Minus size={16} />
-                </button>
-                <button
-                  type='button'
-                  onClick={() => handleStockChange(1)}
-                  className='p-1 text-white/60 hover:text-white'
-                >
-                  <Plus size={16} />
-                </button>
+            </div>
+
+            {/* Stock */}
+            <div className='space-y-2'>
+              <label className='text-sm font-medium text-white/90'>
+                Stock Quantity*
+              </label>
+              <div className='flex items-center'>
+                <input
+                  type='number'
+                  value={stock}
+                  onChange={(e) => setStock(parseInt(e.target.value) || 0)}
+                  className='input-field rounded-r-none border-r-0'
+                />
+                <div className='flex items-center border border-white/20 border-l-0 rounded-r-lg bg-background px-2 h-11.5'>
+                  <button
+                    type='button'
+                    onClick={() => handleStockChange(-1)}
+                    className='p-1 text-white/60 hover:text-white'
+                  >
+                    <Minus size={16} />
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => handleStockChange(1)}
+                    className='p-1 text-white/60 hover:text-white'
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
               </div>
+            </div>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {/* Category */}
+            <div className='space-y-2'>
+              <label className='text-sm font-medium text-white/90'>
+                Category*
+              </label>
+              <select
+                name='category'
+                value={formData.category}
+                onChange={handleChange}
+                className='input-field appearance-none bg-background text-white'
+              >
+                <option value='' className='bg-background text-white'>
+                  Select category
+                </option>
+                {categories?.map((cat: ICat) => (
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                    className='bg-background text-white'
+                  >
+                    {cat.name}
+                  </option>
+                ))}
+                <option value='custom' className='bg-background text-white'>
+                  + Add New Category
+                </option>
+              </select>
+            </div>
+
+            {/* Status */}
+            <div className='space-y-2'>
+              <label className='text-sm font-medium text-white/90'>
+                Status*
+              </label>
+              <select
+                name='status'
+                value={formData.status}
+                onChange={handleChange}
+                className='input-field bg-background text-white'
+              >
+                <option value='active'>Active</option>
+                <option value='draft'>Draft</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Custom Category Input */}
+          {formData.category === "custom" && (
+            <input
+              name='customCategory'
+              value={formData.customCategory}
+              onChange={handleChange}
+              type='text'
+              placeholder='New Category Name'
+              className='input-field border-yellow-500/30'
+            />
+          )}
+
+          {/* Image Section */}
+          <div className='space-y-4'>
+            <label className='text-sm font-medium text-white/90'>
+              Product Images*
+            </label>
+            <input
+              type='file'
+              id='file-upload'
+              className='hidden'
+              accept='image/*'
+              multiple
+              onChange={handleImageChange}
+            />
+            <label
+              htmlFor='file-upload'
+              className='border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-yellow-500/50 hover:bg-white/5 transition-all'
+            >
+              <Upload className='text-white/40 mb-3' size={24} />
+              <p className='text-white/80 text-sm'>Click to upload images</p>
+            </label>
+
+            <div className='flex flex-wrap gap-4 mt-4'>
+              {/* 1. Render Existing Images (from API) */}
+              {existingImages.map((img) => (
+                <div key={img.id} className='relative group w-24 h-24'>
+                  <div className='w-full h-full rounded-lg bg-yellow-900/40 border border-yellow-500/20 overflow-hidden'>
+                    <img
+                      src={img.image}
+                      alt='product'
+                      className='object-cover w-full h-full'
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleDeleteExisting(img.id)}
+                    className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity'
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+
+              {/* 2. Render Selected Files (not yet uploaded) */}
+              {selectedFiles.map((file, index) => (
+                <div key={index} className='relative group w-24 h-24'>
+                  <div className='w-full h-full rounded-lg bg-blue-900/40 border border-blue-500/20 overflow-hidden'>
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt='preview'
+                      className='object-cover w-full h-full'
+                    />
+                  </div>
+                  <button
+                    onClick={() => removeSelectedFile(index)}
+                    className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity'
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          {/* Category */}
-          <div className='space-y-2'>
-            <label className='text-sm font-medium text-white/90'>
-              Category*
-            </label>
-            <select
-              name='category'
-              value={formData.category}
-              onChange={handleChange}
-              className='input-field appearance-none bg-background text-white'
-            >
-              <option value='' className='bg-background text-white'>
-                Select category
-              </option>
-              {categories?.map((cat: ICat) => (
-                <option
-                  key={cat.id}
-                  value={cat.id}
-                  className='bg-background text-white'
-                >
-                  {cat.name}
-                </option>
-              ))}
-              <option value='custom' className='bg-background text-white'>
-                + Add New Category
-              </option>
-            </select>
-          </div>
-
-          {/* Status */}
-          <div className='space-y-2'>
-            <label className='text-sm font-medium text-white/90'>Status*</label>
-            <select
-              name='status'
-              value={formData.status}
-              onChange={handleChange}
-              className='input-field bg-background text-white'
-            >
-              <option value='active'>Active</option>
-              <option value='draft'>Draft</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Custom Category Input */}
-        {formData.category === "custom" && (
-          <input
-            name='customCategory'
-            value={formData.customCategory}
-            onChange={handleChange}
-            type='text'
-            placeholder='New Category Name'
-            className='input-field border-yellow-500/30'
-          />
-        )}
-
-        {/* Image Section */}
-        <div className='space-y-4'>
-          <label className='text-sm font-medium text-white/90'>
-            Product Images*
-          </label>
-          <input
-            type='file'
-            id='file-upload'
-            className='hidden'
-            accept='image/*'
-            multiple
-            onChange={handleImageChange}
-          />
-          <label
-            htmlFor='file-upload'
-            className='border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-yellow-500/50 hover:bg-white/5 transition-all'
+        {/* Featured */}
+        <div className='flex items-center gap-3 pt-4'>
+          <button
+            onClick={() => setIsFeatured(!isFeatured)}
+            className={`w-12 h-6 rounded-full transition-colors relative ${isFeatured ? "bg-yellow-500" : "bg-white/20"}`}
           >
-            <Upload className='text-white/40 mb-3' size={24} />
-            <p className='text-white/80 text-sm'>Click to upload images</p>
-          </label>
+            <span
+              className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${isFeatured ? "translate-x-6" : "translate-x-0"}`}
+            />
+          </button>
+          <span className='text-white font-medium'>Mark as Featured</span>
+        </div>
 
-          <div className='flex flex-wrap gap-4 mt-4'>
-            {/* 1. Render Existing Images (from API) */}
-            {existingImages.map((img) => (
-              <div key={img.id} className='relative group w-24 h-24'>
-                <div className='w-full h-full rounded-lg bg-yellow-900/40 border border-yellow-500/20 overflow-hidden'>
-                  <img
-                    src={img.image}
-                    alt='product'
-                    className='object-cover w-full h-full'
-                  />
-                </div>
-                <button
-                  onClick={() => handleDeleteExisting(img.id)}
-                  className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity'
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
-
-            {/* 2. Render Selected Files (not yet uploaded) */}
-            {selectedFiles.map((file, index) => (
-              <div key={index} className='relative group w-24 h-24'>
-                <div className='w-full h-full rounded-lg bg-blue-900/40 border border-blue-500/20 overflow-hidden'>
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt='preview'
-                    className='object-cover w-full h-full'
-                  />
-                </div>
-                <button
-                  onClick={() => removeSelectedFile(index)}
-                  className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity'
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
-          </div>
+        <div className='flex items-center gap-4 pt-6'>
+          <button
+            onClick={handlePublish}
+            disabled={createProductLoading}
+            className='btn-gold min-w-35 disabled:opacity-50'
+          >
+            {createProductLoading
+              ? "Saving..."
+              : id
+                ? "Update Product"
+                : "Publish Product"}
+          </button>
+          <Link
+            href='/admin/products'
+            className='btn-outline-gold border-white/20 text-white hover:bg-white/5 min-w-35'
+          >
+            Cancel
+          </Link>
         </div>
       </div>
-
-      {/* Featured */}
-      <div className='flex items-center gap-3 pt-4'>
-        <button
-          onClick={() => setIsFeatured(!isFeatured)}
-          className={`w-12 h-6 rounded-full transition-colors relative ${isFeatured ? "bg-yellow-500" : "bg-white/20"}`}
-        >
-          <span
-            className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${isFeatured ? "translate-x-6" : "translate-x-0"}`}
-          />
-        </button>
-        <span className='text-white font-medium'>Mark as Featured</span>
-      </div>
-
-      <div className='flex items-center gap-4 pt-6'>
-        <button
-          onClick={handlePublish}
-          disabled={createProductLoading}
-          className='btn-gold min-w-35 disabled:opacity-50'
-        >
-          {createProductLoading
-            ? "Saving..."
-            : id
-              ? "Update Product"
-              : "Publish Product"}
-        </button>
-        <Link
-          href='/admin/products'
-          className='btn-outline-gold border-white/20 text-white hover:bg-white/5 min-w-35'
-        >
-          Cancel
-        </Link>
-      </div>
-    </div>
+    </RoleRedirect>
   );
 }

@@ -28,10 +28,9 @@ export function RoleRedirect({ allowedRole, children }: RoleRedirectProps) {
     return "authorized";
   }, [user, profileLoading, allowedRole]);
 
-  // ✅ Move redirects into useEffect so they only run after render
   useEffect(() => {
     if (authStatus === "unauthenticated") {
-      // router.replace("/login");
+      router.replace("/login");
     } else if (authStatus.startsWith("redirect:")) {
       const role = authStatus.split(":")[1];
       if (user?.role === "user") {

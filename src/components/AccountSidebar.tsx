@@ -6,6 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, AlertCircle } from "lucide-react"; // I recommend Lucide for cleaner icons
 import Image from "next/image";
+import { logout } from "@/service/authService";
+import { logout as LOGOUT } from "@/redux/features/auth/authSlice";
 
 const menuItems = [
   { label: "Dashboard", href: "/account", icon: "user" },
@@ -89,8 +91,10 @@ export default function AccountSidebar() {
   const { user } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const confirmSignOut = () => {
+  const confirmSignOut = async () => {
     localStorage.removeItem("access_token");
+    await logout();
+    LOGOUT();
     router.push("/login");
   };
 

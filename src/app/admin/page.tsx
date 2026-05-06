@@ -18,6 +18,7 @@ import {
   Tooltip,
 } from "recharts";
 import React from "react";
+import { RoleRedirect } from "@/components/auth/RoleRedirect";
 
 export function DashboardSkeleton() {
   return (
@@ -70,122 +71,124 @@ export default function AdminDashboard() {
     })) || [];
 
   return (
-    <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold text-white mb-1'>Dashboard</h1>
-        <p className='text-white/60 text-sm'>
-          Welcome back! Here&apos;s what&apos;s happening today.
-        </p>
-      </div>
-
-      {/* Summary Cards */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-        <DashboardCard
-          title='Total Revenue'
-          value={`$${stats?.revenue?.total || 0}`}
-          icon={<DollarSign size={20} className='text-blue-600' />}
-          iconBg='bg-blue-100/50'
-          trend='Live'
-          trendColor='text-green-500'
-        />
-        <DashboardCard
-          title='Total Orders'
-          value={stats?.orders?.total?.toString() || "0"}
-          icon={<ShoppingCart size={20} className='text-blue-600' />}
-          iconBg='bg-blue-100/50'
-          trend={`${stats?.orders?.video_orders || 0} Videos`}
-          trendColor='text-blue-500'
-        />
-        <DashboardCard
-          title='Total Users'
-          value={stats?.users?.total?.toString() || "0"}
-          icon={<Users size={20} className='text-blue-600' />}
-          iconBg='bg-blue-100/50'
-          trend='Active'
-          trendColor='text-green-500'
-        />
-        <DashboardCard
-          title='Total Videos'
-          value={stats?.videos?.total?.toString() || "0"}
-          icon={<Video size={20} className='text-blue-600' />}
-          iconBg='bg-blue-100/50'
-          trend={`${stats?.videos?.published || 0} Published`}
-          trendColor='text-green-500'
-        />
-      </div>
-
-      {/* Charts Section */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {/* Sales Trend Chart */}
-        <div className='bg-[#FFCC80] rounded-xl p-6 relative shadow-lg'>
-          <h2 className='text-black font-semibold text-sm mb-6'>
-            Sales Trend (USD)
-          </h2>
-          <div className='h-62.5 w-full'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <LineChart data={formattedSalesData}>
-                <CartesianGrid
-                  strokeDasharray='3 3'
-                  vertical={false}
-                  stroke='rgba(0,0,0,0.1)'
-                />
-                <XAxis
-                  dataKey='name'
-                  tick={{ fill: "#000", fontSize: 12 }}
-                  stroke='#000'
-                />
-                <YAxis tick={{ fill: "#000", fontSize: 12 }} stroke='#000' />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#fff",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Line
-                  type='monotone'
-                  dataKey='value'
-                  stroke='#3b82f6'
-                  strokeWidth={3}
-                  dot={{
-                    fill: "#fff",
-                    stroke: "#3b82f6",
-                    strokeWidth: 2,
-                    r: 4,
-                  }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+    <RoleRedirect allowedRole='ADMIN'>
+      <div className='space-y-6'>
+        <div>
+          <h1 className='text-2xl font-bold text-white mb-1'>Dashboard</h1>
+          <p className='text-white/60 text-sm'>
+            Welcome back! Here&apos;s what&apos;s happening today.
+          </p>
         </div>
 
-        {/* Video Performance Chart */}
-        <div className='bg-white rounded-xl p-6 shadow-lg'>
-          <h2 className='text-black font-semibold text-sm mb-6'>
-            Video Performance ({charts?.video_performance?.metric || "Views"})
-          </h2>
-          <div className='h-62.5 w-full'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <BarChart data={formattedVideoData} barSize={60}>
-                <CartesianGrid
-                  strokeDasharray='3 3'
-                  vertical={false}
-                  stroke='#eee'
-                />
-                <XAxis
-                  dataKey='name'
-                  tick={{ fill: "#888", fontSize: 12 }}
-                  stroke='#ccc'
-                />
-                <YAxis tick={{ fill: "#888", fontSize: 12 }} stroke='#ccc' />
-                <Tooltip cursor={{ fill: "transparent" }} />
-                <Bar dataKey='value' fill='#8b5cf6' radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        {/* Summary Cards */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
+          <DashboardCard
+            title='Total Revenue'
+            value={`$${stats?.revenue?.total || 0}`}
+            icon={<DollarSign size={20} className='text-blue-600' />}
+            iconBg='bg-blue-100/50'
+            trend='Live'
+            trendColor='text-green-500'
+          />
+          <DashboardCard
+            title='Total Orders'
+            value={stats?.orders?.total?.toString() || "0"}
+            icon={<ShoppingCart size={20} className='text-blue-600' />}
+            iconBg='bg-blue-100/50'
+            trend={`${stats?.orders?.video_orders || 0} Videos`}
+            trendColor='text-blue-500'
+          />
+          <DashboardCard
+            title='Total Users'
+            value={stats?.users?.total?.toString() || "0"}
+            icon={<Users size={20} className='text-blue-600' />}
+            iconBg='bg-blue-100/50'
+            trend='Active'
+            trendColor='text-green-500'
+          />
+          <DashboardCard
+            title='Total Videos'
+            value={stats?.videos?.total?.toString() || "0"}
+            icon={<Video size={20} className='text-blue-600' />}
+            iconBg='bg-blue-100/50'
+            trend={`${stats?.videos?.published || 0} Published`}
+            trendColor='text-green-500'
+          />
+        </div>
+
+        {/* Charts Section */}
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+          {/* Sales Trend Chart */}
+          <div className='bg-[#FFCC80] rounded-xl p-6 relative shadow-lg'>
+            <h2 className='text-black font-semibold text-sm mb-6'>
+              Sales Trend (USD)
+            </h2>
+            <div className='h-62.5 w-full'>
+              <ResponsiveContainer width='100%' height='100%'>
+                <LineChart data={formattedSalesData}>
+                  <CartesianGrid
+                    strokeDasharray='3 3'
+                    vertical={false}
+                    stroke='rgba(0,0,0,0.1)'
+                  />
+                  <XAxis
+                    dataKey='name'
+                    tick={{ fill: "#000", fontSize: 12 }}
+                    stroke='#000'
+                  />
+                  <YAxis tick={{ fill: "#000", fontSize: 12 }} stroke='#000' />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#fff",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Line
+                    type='monotone'
+                    dataKey='value'
+                    stroke='#3b82f6'
+                    strokeWidth={3}
+                    dot={{
+                      fill: "#fff",
+                      stroke: "#3b82f6",
+                      strokeWidth: 2,
+                      r: 4,
+                    }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Video Performance Chart */}
+          <div className='bg-white rounded-xl p-6 shadow-lg'>
+            <h2 className='text-black font-semibold text-sm mb-6'>
+              Video Performance ({charts?.video_performance?.metric || "Views"})
+            </h2>
+            <div className='h-62.5 w-full'>
+              <ResponsiveContainer width='100%' height='100%'>
+                <BarChart data={formattedVideoData} barSize={60}>
+                  <CartesianGrid
+                    strokeDasharray='3 3'
+                    vertical={false}
+                    stroke='#eee'
+                  />
+                  <XAxis
+                    dataKey='name'
+                    tick={{ fill: "#888", fontSize: 12 }}
+                    stroke='#ccc'
+                  />
+                  <YAxis tick={{ fill: "#888", fontSize: 12 }} stroke='#ccc' />
+                  <Tooltip cursor={{ fill: "transparent" }} />
+                  <Bar dataKey='value' fill='#8b5cf6' radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </RoleRedirect>
   );
 }
 
