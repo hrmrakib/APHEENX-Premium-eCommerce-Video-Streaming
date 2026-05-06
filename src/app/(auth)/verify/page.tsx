@@ -77,14 +77,13 @@ export default function VerifyPage() {
     }
 
     try {
-      await verifyEmail({ email, otp: fullCode });
+      const res = await verifyEmail({ email, otp: fullCode }).unwrap();
+
+      toast.success(res?.message);
 
       router.push(type === "signup" ? "/login" : "/");
     } catch (err: any) {
-      setError(
-        err?.response?.data?.message ||
-          "Verification failed. Please try again.",
-      );
+      setError(err?.data?.message || "Verification failed. Please try again.");
     }
   }, [code, email, type, router, verifyEmail]);
 

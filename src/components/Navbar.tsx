@@ -21,12 +21,11 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { totalItems, items } = useProductCart();
+  const { items } = useProductCart();
 
-  const { user, token, profileLoading } = useAuth();
-  // const user = useSelector((state: RootState) => state.auth.user);
+  const { user, profileLoading } = useAuth();
 
-  // console.log({ user, token, profileLoading });
+  console.log({ user, profileLoading });
 
   useEffect(() => {
     setMenuOpen(false);
@@ -127,7 +126,7 @@ export default function Navbar() {
             href={user ? "/account" : "/login"}
             className='relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-border text-foreground/70 hover:text-foreground transition-colors'
           >
-            {user ? (
+            {user && !profileLoading ? (
               <Image
                 src={(user?.profile_image as string) || "/placeholder.png"}
                 alt={user?.name || "User"}

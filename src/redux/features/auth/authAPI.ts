@@ -80,6 +80,22 @@ const authAPI = baseAPI.injectEndpoints({
         body: payload,
       }),
     }),
+
+    forgotPassword: builder.mutation({
+      query: (payload) => ({
+        url: "/auth/forgot-password/",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    resetPassword: builder.mutation({
+      query: (payload) => ({
+        url: "/auth/reset-password/",
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -92,5 +108,7 @@ export const {
   useGetMeQuery,
   useLogoutMutation,
   useChangePasswordMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = authAPI;
 export default authAPI;
