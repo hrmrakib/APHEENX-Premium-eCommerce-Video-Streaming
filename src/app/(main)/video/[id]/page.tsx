@@ -248,7 +248,9 @@ export default function VideoDetailPage() {
               disabled={isUnlockingVideo}
               className='btn-gold mt-6 w-full py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              Pay with PayPal — ${video.price}{" "}
+              {isUnlockingVideo
+                ? "Payment Processing "
+                : `Pay with PayPal — ${video.price} `}
               {isUnlockingVideo && (
                 <Loader className='animate-spin' size={16} />
               )}
