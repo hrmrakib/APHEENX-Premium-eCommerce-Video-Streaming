@@ -37,6 +37,20 @@ const videoAdminAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: ["Video"],
     }),
+
+    createVideoCategory: builder.mutation({
+      query: (data) => ({
+        url: "/video-categories/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Video"],
+    }),
+
+    getVideoCategories: builder.query({
+      query: () => "/video-categories/",
+      providesTags: ["Video"],
+    }),
   }),
 });
 
@@ -46,6 +60,8 @@ export const {
   useAddVideoMutation,
   useUpdateVideoMutation,
   useDeleteVideoMutation,
+  useCreateVideoCategoryMutation,
+  useGetVideoCategoriesQuery,
 } = videoAdminAPI;
 
 export default videoAdminAPI;

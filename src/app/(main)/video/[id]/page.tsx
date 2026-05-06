@@ -26,14 +26,14 @@ export default function VideoDetailPage() {
   const [unlockVideoByOrderMutation, { isLoading: isUnlockingVideo }] =
     useUnlockVideoByOrderMutation();
   const { data: videoData, isLoading, isError } = useGetVideoByIdQuery(params);
+
   const video = videoData?.data;
+
   const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id, {
     skip: !video?.is_unlocked,
   });
 
   console.log({ getVideoStreamData });
-
-  console.log({ video });
 
   if (isLoading) {
     return (
@@ -88,14 +88,24 @@ export default function VideoDetailPage() {
         {video.is_unlocked ? (
           /* Fully unlocked — show the real trailer/video */
           <video
-            src={video.trailer}
+            key={getVideoStreamData?.data || video.trailer} // Key forces re-render when switching from trailer to stream
+            src={getVideoStreamData?.data || video.trailer}
             poster={video.thumbnail}
             controls
+            autoPlay={!!getVideoStreamData?.data} // Auto play when stream becomes available
             controlsList='nodownload'
             onContextMenu={(e) => e.preventDefault()}
             className='h-full w-full object-cover'
           />
         ) : (
+          // <video
+          //   src={video.trailer}
+          //   poster={video.thumbnail}
+          //   controls
+          //   controlsList='nodownload'
+          //   onContextMenu={(e) => e.preventDefault()}
+          //   className='h-full w-full object-cover'
+          // />
           /* Locked — show thumbnail preview */
           <>
             <Image

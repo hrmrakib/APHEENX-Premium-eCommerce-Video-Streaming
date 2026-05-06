@@ -6,12 +6,18 @@ import { useState, ChangeEvent } from "react";
 import Link from "next/link";
 import { ArrowLeft, Upload, X, FileVideo, Loader } from "lucide-react";
 import { toast } from "sonner";
-import { useAddVideoMutation } from "@/redux/features/admin/videoAPI";
+import {
+  useAddVideoMutation,
+  useCreateVideoCategoryMutation,
+  useGetVideoCategoriesQuery,
+} from "@/redux/features/admin/videoAPI";
 import { RoleRedirect } from "@/components/auth/RoleRedirect";
+import { useRouter } from "next/navigation";
 
 interface IVideoFormData {
   title: string;
   category: string | number;
+  customCategory?: string;
   description: string;
   price: string;
   status: "draft" | "published";
@@ -21,10 +27,18 @@ interface IVideoFormData {
   main_video: File | null;
 }
 
+interface ICat {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export default function AddNewVideoPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState<IVideoFormData>({
     title: "",
     category: "",
+    customCategory: "",
     description: "",
     price: "",
     status: "draft",
@@ -34,6 +48,11 @@ export default function AddNewVideoPage() {
     main_video: null,
   });
   const [addVideoMutation, { isLoading: isAdding }] = useAddVideoMutation();
+  const [createVideoCategoryMutation] = useCreateVideoCategoryMutation();
+  const { data: vidoeCategoriesData } = useGetVideoCategoriesQuery({});
+  const videoCategories = vidoeCategoriesData?.data || [];
+
+  console.log({ videoCategories });
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -68,9 +87,27 @@ export default function AddNewVideoPage() {
       );
     }
     try {
+      let finalCategoryId = formData.category;
+
+      // 1. If user chose 'custom', create the category first
+      if (formData.category === "custom" && formData.customCategory) {
+        const categoryRes = await createVideoCategoryMutation({
+          name: formData.customCategory,
+        }).unwrap();
+
+        // Use the ID returned from the API response
+        // Adjust 'categoryRes.id' or 'categoryRes.data.id' based on your API structure
+        finalCategoryId = categoryRes.id || categoryRes.data?.id;
+      }
+
+      if (!finalCategoryId) {
+        toast.error("Please select or create a category");
+        return;
+      }
+
       const submissionData = new FormData();
       submissionData.append("title", formData.title);
-      submissionData.append("category", formData.category.toString());
+      submissionData.append("category", String(finalCategoryId));
       submissionData.append("description", formData.description);
       submissionData.append("price", formData.price);
       submissionData.append("status", formData.status);
@@ -82,17 +119,29 @@ export default function AddNewVideoPage() {
       if (formData.main_video)
         submissionData.append("main_video", formData.main_video);
 
-      const res = await addVideoMutation(submissionData).unwrap();
+      await addVideoMutation(submissionData).unwrap();
 
       toast.success("Video added successfully!");
+
+      router.push("/admin/videos");
     } catch (error: any) {
       toast.error(
         error?.data?.message || "Something happed wrong to add video.",
       );
+    } finally {
+      setFormData({
+        title: "",
+        category: "",
+        customCategory: "",
+        description: "",
+        price: "",
+        status: "draft",
+        is_featured: false,
+        thumbnail: null,
+        trailer: null,
+        main_video: null,
+      });
     }
-
-    // Here you would call your useCreateVideoMutation(submissionData)
-    console.log("Form Submitted", formData);
   };
 
   return (
@@ -118,6 +167,7 @@ export default function AddNewVideoPage() {
           </h2>
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {/* Video Title - Left Column */}
             <div className='space-y-2'>
               <label className='text-sm font-medium text-white/90'>
                 Video Title<span className='text-red-500'>*</span>
@@ -132,22 +182,54 @@ export default function AddNewVideoPage() {
               />
             </div>
 
+            {/* Category Selection - Right Column */}
             <div className='space-y-2'>
               <label className='text-sm font-medium text-white/90'>
-                Video Category<span className='text-red-500'>*</span>
+                Category<span className='text-red-500'>*</span>
               </label>
               <select
                 name='category'
                 value={formData.category}
                 onChange={handleInputChange}
-                className='input-field appearance-none bg-background'
+                className='input-field appearance-none bg-background text-black'
               >
-                <option value=''>Select Category</option>
-                <option value='1'>Tutorials</option>
-                <option value='2'>Entertainment</option>
-                <option value='3'>Drama</option>
+                <option value='' className='bg-background text-white'>
+                  Select category
+                </option>
+                {videoCategories?.map((cat: ICat) => (
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                    className='bg-background text-white'
+                  >
+                    {cat.name}
+                  </option>
+                ))}
+                <option
+                  value='custom'
+                  className='bg-background text-yellow-500 font-bold'
+                >
+                  + Add New Category
+                </option>
               </select>
             </div>
+
+            {/* Custom Category Input - Appears below Category in the Right Column */}
+            {formData.category === "custom" && (
+              <div className='md:col-start-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300'>
+                <label className='text-sm font-medium text-yellow-500'>
+                  New Category Name*
+                </label>
+                <input
+                  name='customCategory'
+                  value={formData.customCategory}
+                  onChange={handleInputChange}
+                  type='text'
+                  placeholder='Type your new category name'
+                  className='input-field border-yellow-500/30 focus:border-yellow-500'
+                />
+              </div>
+            )}
           </div>
 
           <div className='space-y-2'>
@@ -189,8 +271,12 @@ export default function AddNewVideoPage() {
                 onChange={handleInputChange}
                 className='input-field appearance-none bg-background'
               >
-                <option value='draft'>Draft</option>
-                <option value='published'>Published</option>
+                <option value='draft' className='bg-background text-white'>
+                  Draft
+                </option>
+                <option value='published' className='bg-background text-white'>
+                  Published
+                </option>
               </select>
             </div>
           </div>
