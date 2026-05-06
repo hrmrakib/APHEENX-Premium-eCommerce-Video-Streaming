@@ -33,13 +33,36 @@ export interface IOrder {
   postal_code: string;
   country: string;
   paypal_order_id: string;
-  payment_status: "pending" | "completed" | "failed" | string;
-  order_status: "pending" | "shipped" | "delivered" | "cancelled" | string;
+  payment_status: "pending" | "captured" | "failed" | "refunded" | string;
+  order_status:
+    | "pending"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "cancelled"
+    | string;
   total_price: string;
   items: IOrderItem[];
   created_at: string;
   updated_at: string;
 }
+
+/*
+PAYMENT_STATUS_CHOICES = (
+    ('pending', 'Pending'),
+    ('captured', 'Captured'),
+    ('failed', 'Failed'),
+    ('refunded', 'Refunded'),
+)
+
+const ORDER_STATUS_CHOICES = {
+    ('pending', 'Pending'),
+    ('processing', 'Processing'),
+    ('shipped', 'Shipped'),
+    ('delivered', 'Delivered'),
+    ('cancelled', 'Cancelled'),
+}
+*/
 
 export default function OrderDetailsPage() {
   const id = useParams().id as string;
