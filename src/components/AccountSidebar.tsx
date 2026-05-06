@@ -103,12 +103,12 @@ export default function AccountSidebar() {
           {/* User Info */}
           <div className='flex items-center gap-3 pb-4 border-b border-border'>
             <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gold/20 text-gold text-sm font-bold'>
-              {/* {user?.name?.at(0)?.toUpperCase() || "U"} */}
               <Image
-                src={user?.profile_image as string}
+                src={(user?.profile_image as string) || "/placeholder.png"}
                 alt={user?.name || "User"}
                 width={40}
                 height={40}
+                unoptimized
                 className='rounded-full'
               />
             </div>

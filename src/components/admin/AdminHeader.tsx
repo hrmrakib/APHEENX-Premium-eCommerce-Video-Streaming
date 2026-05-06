@@ -41,10 +41,12 @@ export default function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
             title={user?.name + " - Profile Picture"}
           >
             <Image
-              src={user?.profile_image as string}
+              src={(user?.profile_image as string) || "/placeholder.png"}
               width={40}
               height={40}
+              unoptimized
               alt='Profile'
+              className='object-cover'
             />
           </div>
           <div className='hidden md:block'>

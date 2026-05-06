@@ -7,7 +7,7 @@ import AccountSidebar from "@/components/AccountSidebar";
 import { Camera, User, Check, CircleUserRound, Loader } from "lucide-react";
 import Image from "next/image";
 import { useUpdateUserProfileMutation } from "@/redux/features/user/userAPI";
-import { useAuth } from "@/hooks/useAuth"; // Assuming you have this to get current user
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
@@ -18,9 +18,6 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
-
-  // TODO: test console
-  console.log({ user });
 
   // Sync state with user data on load
   useEffect(() => {
@@ -54,7 +51,7 @@ export default function SettingsPage() {
 
     try {
       const payload = new FormData();
-      payload.append("full_name", fullName);
+      payload.append("name", fullName);
 
       if (selectedFile) {
         payload.append("profile_image", selectedFile);
@@ -108,6 +105,7 @@ export default function SettingsPage() {
                           src={profileImage}
                           alt='Profile'
                           fill
+                          unoptimized
                           className='object-cover'
                         />
                       ) : (

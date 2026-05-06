@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -14,13 +15,11 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
-  // const [lowStockAlerts, setLowStockAlerts] = useState(true);
-  // const [newUserRegistration, setNewUserRegistration] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { user } = useAuth();
   const [fullName, setFullName] = useState("");
@@ -29,6 +28,13 @@ export default function AdminSettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.name || "");
+      setProfileImage(user.profile_image || null);
+    }
+  }, [user]);
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
@@ -42,10 +48,10 @@ export default function AdminSettingsPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file); // Store the actual file for the API
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImage(reader.result as string); // For UI preview
+        setProfileImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -59,7 +65,7 @@ export default function AdminSettingsPage() {
 
     try {
       const payload = new FormData();
-      payload.append("full_name", fullName);
+      payload.append("name", fullName);
 
       if (selectedFile) {
         payload.append("profile_image", selectedFile);
@@ -121,9 +127,10 @@ export default function AdminSettingsPage() {
                 <div className='w-24 h-24 rounded-full overflow-hidden border-2 border-yellow-500/30 bg-white/5 flex items-center justify-center relative'>
                   {profileImage ? (
                     <Image
-                      src={profileImage}
+                      src={(profileImage as string) || "/placeholder.png"}
                       alt='Profile'
                       fill
+                      unoptimized
                       className='object-cover'
                     />
                   ) : (
