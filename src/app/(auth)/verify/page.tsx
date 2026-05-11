@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ import {
   useVerifyEmailMutation,
 } from "@/redux/features/auth/authAPI";
 
-export default function VerifyPage() {
+function VerifyPageComponent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
   const type = searchParams.get("type") || "";
@@ -167,4 +167,10 @@ export default function VerifyPage() {
       </div>
     </div>
   );
+}
+
+export default function VerifyPage() {
+  <Suspense fallback={<p>loading ...</p>}>
+    <VerifyPageComponent />
+  </Suspense>;
 }

@@ -175,10 +175,10 @@ export default function AccountDashboard() {
                     <div className='text-right flex items-center gap-4'>
                       <div>
                         <p className='text-sm font-black text-yellow-500'>
-                          ${parseFloat(order.total_price).toFixed(2)}
+                          ${parseFloat(order.total_price)?.toFixed(2)}
                         </p>
                         <p className='text-[10px] text-white/30 font-medium italic'>
-                          {order.items[0]?.product_name.substring(0, 15)}...
+                          {order.items[0]?.product_name?.substring(0, 15)}...
                         </p>
                       </div>
                       <ChevronRight

@@ -174,7 +174,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className='flex items-center gap-4 pt-6'>
+                    <div className='flex flex-wrap items-center gap-4 pt-6'>
                       <button
                         onClick={handleSave}
                         disabled={isLoading}

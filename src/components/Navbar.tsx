@@ -19,19 +19,14 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const { items } = useProductCart();
 
   const { user, profileLoading } = useAuth();
 
-  console.log({ user, profileLoading });
-
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
-
-  console.log({ user });
 
   return (
     <header className='sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md'>
@@ -77,7 +72,7 @@ export default function Navbar() {
         {/* Right section */}
         <div className='flex items-center gap-3'>
           {/* Search */}
-          <div className='hidden sm:flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2'>
+          {/* <div className='hidden sm:flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2'>
             <svg
               className='h-4 w-4 text-muted'
               fill='none'
@@ -94,7 +89,7 @@ export default function Navbar() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className='w-28 bg-transparent text-sm text-foreground outline-none placeholder:text-muted lg:w-36'
             />
-          </div>
+          </div> */}
 
           {/* Cart */}
           <button
