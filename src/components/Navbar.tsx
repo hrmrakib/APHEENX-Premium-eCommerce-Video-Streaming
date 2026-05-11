@@ -33,15 +33,14 @@ export default function Navbar() {
       <div className='mx-auto flex h-16 container items-center justify-between px-4 lg:px-8'>
         {/* Logo */}
         <Link href='/' className='shrink-0'>
-          <div className='flex items-center gap-1'>
-            <div className='relative'>
-              <div className='gold-gradient-text text-xl font-black italic tracking-tighter leading-tight'>
-                APHEENX
-              </div>
-              <div className='text-[8px] text-gold tracking-wider'>
-                🔥 PREMIUM
-              </div>
-            </div>
+          <div className='relative w-36 h-10'>
+            <Image
+              src={"/logo.png"}
+              fill
+              unoptimized
+              alt='APHEENX Logo'
+              className='object-contain object-left'
+            />
           </div>
         </Link>
 

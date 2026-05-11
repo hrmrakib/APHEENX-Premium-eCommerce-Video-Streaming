@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
 import {
-  useUnlockVideoByOrderMutation,
   useGetVideoStreamQuery,
+  useUnlockVideoByOrderMutation,
 } from "@/redux/features/video/videoAPI";
 import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 import { toast } from "sonner";
@@ -20,21 +20,26 @@ export default function VideoDetailPage() {
   const router = useRouter();
   const params = useParams().id as string;
   const [showPayment, setShowPayment] = useState(false);
-  const [isBuffering, setIsBuffering] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuth();
 
   const { toggleWishlist, isInWishlist } = useVideoWishlist();
   const [unlockVideoByOrderMutation, { isLoading: isUnlockingVideo }] =
     useUnlockVideoByOrderMutation();
-  const { data: videoData, isLoading, isError } = useGetVideoQuery(params);
 
+  const { data: videoData, isLoading, isError } = useGetVideoQuery(params);
   const video = videoData?.data;
 
-  const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id, {
-    skip: !video?.is_unlocked,
-  });
+  const { data: streamData, isLoading: isStreamLoading } =
+    useGetVideoStreamQuery(video?.id, {
+      skip: !video?.id || !video?.is_unlocked,
+    });
+
+  // unlocked → wait for stream URL → play it
+  // locked   → play trailer immediately
+  const streamUrl: string | undefined = streamData?.data?.video_url;
+  const playbackSrc: string | undefined = video?.is_unlocked
+    ? streamUrl
+    : video?.trailer;
 
   if (isLoading) {
     return (
@@ -64,12 +69,10 @@ export default function VideoDetailPage() {
       router.push("/login");
       return;
     }
-
     try {
       const res = await unlockVideoByOrderMutation({
         video_id: videoId,
       }).unwrap();
-
       if (res.status === "success") {
         toast.success(res?.message || res?.data?.detail);
         setTimeout(() => {
@@ -85,60 +88,9 @@ export default function VideoDetailPage() {
     <div className='mx-auto container px-4 py-8 lg:px-8'>
       {/* Video Player */}
       <div className='relative aspect-video w-full overflow-hidden rounded-xl bg-surface border border-border'>
-        {video.is_unlocked ? (
-          /* Fully unlocked — streaming video with buffering overlay */
-          <div className='relative h-full w-full bg-black'>
-            {/* Buffering Overlay */}
-            {isBuffering && (
-              <div className='absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm gap-3 pointer-events-none'>
-                <svg
-                  className='animate-spin h-14 w-14 text-gold'
-                  viewBox='0 0 50 50'
-                  fill='none'
-                >
-                  <circle
-                    cx='25'
-                    cy='25'
-                    r='20'
-                    stroke='currentColor'
-                    strokeWidth='4'
-                    strokeLinecap='round'
-                    strokeDasharray='80 40'
-                  />
-                </svg>
-                <p className='text-sm text-gold font-medium tracking-wide'>
-                  {!hasStarted ? "Loading video…" : "Buffering…"}
-                </p>
-              </div>
-            )}
-
-            <video
-              ref={videoRef}
-              key={getVideoStreamData?.data || video.trailer}
-              src={getVideoStreamData?.data || video.trailer}
-              poster={video.thumbnail}
-              controls
-              autoPlay={!!getVideoStreamData?.data}
-              controlsList='nodownload'
-              onContextMenu={(e) => e.preventDefault()}
-              className='h-full w-full object-contain'
-              onLoadStart={() => {
-                setIsBuffering(true);
-                setHasStarted(false);
-              }}
-              onWaiting={() => setIsBuffering(true)}
-              onStalled={() => setIsBuffering(true)}
-              onCanPlay={() => setIsBuffering(false)}
-              onPlaying={() => {
-                setIsBuffering(false);
-                setHasStarted(true);
-              }}
-              onError={() => setIsBuffering(false)}
-            />
-          </div>
-        ) : (
-          /* Locked — show thumbnail preview */
-          <>
+        {/* While fetching stream URL for unlocked video — show thumbnail + spinner */}
+        {video.is_unlocked && isStreamLoading ? (
+          <div className='relative h-full w-full'>
             <Image
               src={video.thumbnail}
               alt={video.title}
@@ -148,31 +100,55 @@ export default function VideoDetailPage() {
               sizes='100vw'
               priority
             />
-            <span className='absolute right-4 top-4 rounded-md bg-black/50 px-3 py-1.5 text-sm font-semibold text-gold italic backdrop-blur-sm'>
-              Preview Only
-            </span>
-            <div className='absolute inset-0 flex items-center justify-center cursor-pointer'>
-              <div className='flex h-16 w-16 items-center justify-center rounded-full border-2 border-gold bg-gold/20 text-gold backdrop-blur-sm transition-all hover:bg-gold/30 hover:scale-110'>
-                <svg
-                  className='h-7 w-7 ml-1'
-                  fill='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path d='M8 5v14l11-7z' />
-                </svg>
-              </div>
+            <div className='absolute inset-0 flex flex-col items-center justify-center bg-black/50 gap-3'>
+              <svg
+                className='animate-spin h-12 w-12 text-gold'
+                viewBox='0 0 50 50'
+                fill='none'
+              >
+                <circle
+                  cx='25'
+                  cy='25'
+                  r='20'
+                  stroke='currentColor'
+                  strokeWidth='4'
+                  strokeLinecap='round'
+                  strokeDasharray='80 40'
+                />
+              </svg>
+              <p className='text-sm text-gold font-medium'>Loading video…</p>
             </div>
-            <div className='absolute bottom-0 left-0 right-0 p-4'>
-              <div className='flex items-center gap-3'>
-                <div className='flex-1 h-1 rounded-full bg-border overflow-hidden'>
-                  <div className='h-full w-1/3 rounded-full gold-gradient' />
-                </div>
-                <span className='text-xs text-foreground/70 font-mono'>
-                  {video.duration_display}
-                </span>
-              </div>
-            </div>
-          </>
+          </div>
+        ) : playbackSrc ? (
+          /* Stream URL ready (unlocked) OR trailer (locked) — just play it */
+          <div className='relative h-full w-full bg-black'>
+            {!video.is_unlocked && (
+              <span className='absolute right-4 top-4 z-10 rounded-md bg-black/50 px-3 py-1.5 text-sm font-semibold text-gold italic backdrop-blur-sm'>
+                Trailer Only
+              </span>
+            )}
+            <video
+              src={playbackSrc}
+              poster={video.thumbnail}
+              controls
+              controlsList='nodownload'
+              onContextMenu={(e) => e.preventDefault()}
+              className='h-full w-full object-contain'
+            />
+          </div>
+        ) : (
+          /* Fallback: thumbnail only */
+          <div className='relative h-full w-full'>
+            <Image
+              src={video.thumbnail}
+              alt={video.title}
+              fill
+              unoptimized
+              className='object-cover'
+              sizes='100vw'
+              priority
+            />
+          </div>
         )}
       </div>
 

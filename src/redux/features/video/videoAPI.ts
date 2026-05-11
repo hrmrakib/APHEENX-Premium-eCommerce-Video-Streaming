@@ -6,7 +6,7 @@ export const videoAPI = baseAPI.injectEndpoints({
     getVideoStream: builder.query({
       query: (id) => ({
         url: `/videos/${id}/stream/`,
-        responseHandler: (response: Response) => response.blob(),
+        // responseHandler: (response: Response) => response.blob(),
       }),
     }),
 
