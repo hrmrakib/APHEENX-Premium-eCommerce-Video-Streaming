@@ -6,10 +6,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import VideoCard from "@/components/VideoCard";
 import SectionHeader from "@/components/SectionHeader";
-import {
-  useGetVideoStreamQuery,
-  useUnlockVideoByOrderMutation,
-} from "@/redux/features/video/videoAPI";
+import { useUnlockVideoByOrderMutation } from "@/redux/features/video/videoAPI";
 import { useVideoWishlist } from "@/hooks/useVideoWishlist";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
@@ -20,6 +17,7 @@ export default function VideoDetailPage() {
   const router = useRouter();
   const params = useParams().id as string;
   const [showPayment, setShowPayment] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const { user } = useAuth();
 
   const { toggleWishlist, isInWishlist } = useVideoWishlist();
@@ -29,16 +27,9 @@ export default function VideoDetailPage() {
   const { data: videoData, isLoading, isError } = useGetVideoQuery(params);
   const video = videoData?.data;
 
-  const { data: streamData, isLoading: isStreamLoading } =
-    useGetVideoStreamQuery(video?.id, {
-      skip: !video?.id || !video?.is_unlocked,
-    });
-
-  // unlocked → wait for stream URL → play it
-  // locked   → play trailer immediately
-  const streamUrl: string | undefined = streamData?.data?.video_url;
+  // unlocked → main_video, locked → trailer
   const playbackSrc: string | undefined = video?.is_unlocked
-    ? streamUrl
+    ? video?.main_video
     : video?.trailer;
 
   if (isLoading) {
@@ -87,10 +78,13 @@ export default function VideoDetailPage() {
   return (
     <div className='mx-auto container px-4 py-8 lg:px-8'>
       {/* Video Player */}
-      <div className='relative aspect-video w-full overflow-hidden rounded-xl bg-surface border border-border'>
-        {/* While fetching stream URL for unlocked video — show thumbnail + spinner */}
-        {video.is_unlocked && isStreamLoading ? (
-          <div className='relative h-full w-full'>
+      <div className='relative aspect-video w-full overflow-hidden rounded-xl bg-black border border-border'>
+        {!isPlaying ? (
+          /* ── Thumbnail + Play Button ── */
+          <div
+            className='relative h-full w-full cursor-pointer group'
+            onClick={() => setIsPlaying(true)}
+          >
             <Image
               src={video.thumbnail}
               alt={video.title}
@@ -100,55 +94,48 @@ export default function VideoDetailPage() {
               sizes='100vw'
               priority
             />
-            <div className='absolute inset-0 flex flex-col items-center justify-center bg-black/50 gap-3'>
-              <svg
-                className='animate-spin h-12 w-12 text-gold'
-                viewBox='0 0 50 50'
-                fill='none'
-              >
-                <circle
-                  cx='25'
-                  cy='25'
-                  r='20'
-                  stroke='currentColor'
-                  strokeWidth='4'
-                  strokeLinecap='round'
-                  strokeDasharray='80 40'
-                />
-              </svg>
-              <p className='text-sm text-gold font-medium'>Loading video…</p>
-            </div>
-          </div>
-        ) : playbackSrc ? (
-          /* Stream URL ready (unlocked) OR trailer (locked) — just play it */
-          <div className='relative h-full w-full bg-black'>
+
+            {/* Dark overlay on hover */}
+            <div className='absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors' />
+
+            {/* Locked badge */}
             {!video.is_unlocked && (
-              <span className='absolute right-4 top-4 z-10 rounded-md bg-black/50 px-3 py-1.5 text-sm font-semibold text-gold italic backdrop-blur-sm'>
+              <span className='absolute right-4 top-4 z-10 rounded-md bg-black/60 px-3 py-1.5 text-sm font-semibold text-gold italic backdrop-blur-sm'>
                 Trailer Only
               </span>
             )}
-            <video
-              src={playbackSrc}
-              poster={video.thumbnail}
-              controls
-              controlsList='nodownload'
-              onContextMenu={(e) => e.preventDefault()}
-              className='h-full w-full object-contain'
-            />
+
+            {/* Play Button */}
+            <div className='absolute inset-0 flex items-center justify-center'>
+              <div className='flex h-20 w-20 items-center justify-center rounded-full border-2 border-gold bg-black/50 text-gold backdrop-blur-sm transition-all group-hover:scale-110 group-hover:bg-gold/20'>
+                <svg
+                  className='h-9 w-9 ml-1'
+                  fill='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path d='M8 5v14l11-7z' />
+                </svg>
+              </div>
+            </div>
+
+            {/* Duration bottom bar */}
+            {video.duration_display && (
+              <div className='absolute bottom-4 right-4 rounded bg-black/60 px-2 py-1 text-xs text-white font-mono backdrop-blur-sm'>
+                {video.duration_display}
+              </div>
+            )}
           </div>
         ) : (
-          /* Fallback: thumbnail only */
-          <div className='relative h-full w-full'>
-            <Image
-              src={video.thumbnail}
-              alt={video.title}
-              fill
-              unoptimized
-              className='object-cover'
-              sizes='100vw'
-              priority
-            />
-          </div>
+          /* ── Video Player (shown after play clicked) ── */
+          <video
+            src={playbackSrc}
+            poster={video.thumbnail}
+            controls
+            autoPlay
+            controlsList='nodownload'
+            onContextMenu={(e) => e.preventDefault()}
+            className='h-full w-full object-contain'
+          />
         )}
       </div>
 
