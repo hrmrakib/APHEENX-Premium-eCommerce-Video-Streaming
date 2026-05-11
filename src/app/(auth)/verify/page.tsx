@@ -170,7 +170,9 @@ function VerifyPageComponent() {
 }
 
 export default function VerifyPage() {
-  <Suspense fallback={<p>loading ...</p>}>
-    <VerifyPageComponent />
-  </Suspense>;
+  return (
+    <Suspense fallback={<p>loading ...</p>}>
+      <VerifyPageComponent />
+    </Suspense>
+  );
 }

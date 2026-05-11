@@ -129,7 +129,7 @@ export default function SignInPage() {
           {/* Password */}
           <div>
             <label className='block text-sm font-semibold text-foreground mb-2'>
-              Email Address
+              Password
             </label>
             <div className='relative'>
               <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted'>
@@ -195,7 +195,7 @@ export default function SignInPage() {
 
           {/* Remember + Forgot */}
           <div className='flex items-center justify-between'>
-            <label className='flex items-center gap-2 cursor-pointer'>
+            {/* <label className='flex items-center gap-2 cursor-pointer'>
               <input
                 type='checkbox'
                 checked={remember}
@@ -203,10 +203,10 @@ export default function SignInPage() {
                 className='h-4 w-4 rounded border-border accent-gold'
               />
               <span className='text-sm text-foreground'>Remember me</span>
-            </label>
+            </label> */}
             <Link
               href='/forgot-password'
-              className='text-sm text-gold hover:text-gold-light transition-colors'
+              className=' text-sm text-gold hover:text-gold-light transition-colors'
             >
               Forgot Password?
             </Link>

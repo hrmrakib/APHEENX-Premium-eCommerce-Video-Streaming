@@ -48,7 +48,8 @@ export default function AddNewVideoPage() {
     main_video: null,
   });
   const [addVideoMutation, { isLoading: isAdding }] = useAddVideoMutation();
-  const [createVideoCategoryMutation] = useCreateVideoCategoryMutation();
+  const [createVideoCategoryMutation, { isLoading: isCreateVideoCategory }] =
+    useCreateVideoCategoryMutation();
   const { data: vidoeCategoriesData } = useGetVideoCategoriesQuery({});
   const videoCategories = vidoeCategoriesData?.data || [];
 
@@ -415,12 +416,16 @@ export default function AddNewVideoPage() {
 
         <div className='flex items-center gap-4 pt-6'>
           <button
-            disabled={isAdding}
+            disabled={isAdding || isCreateVideoCategory}
             onClick={handleSubmit}
             className='btn-gold min-w-35 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            {isAdding ? "Publishing..." : "Publish Video"}{" "}
-            {isAdding && <Loader className='animate-spin ml-2' size={16} />}
+            {isAdding || isCreateVideoCategory
+              ? "Publishing..."
+              : "Publish Video"}{" "}
+            {(isAdding || isCreateVideoCategory) && (
+              <Loader className='animate-spin ml-2' size={16} />
+            )}
           </button>
           <Link
             href='/admin/videos'

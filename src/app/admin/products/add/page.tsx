@@ -23,7 +23,10 @@ interface ICat {
 export default function AddNewProductPage() {
   const router = useRouter();
   const [createProduct, { isLoading }] = useCreateProductMutation();
-  const [createProductCategoryMutation] = useCreateProductCategoryMutation();
+  const [
+    createProductCategoryMutation,
+    { isLoading: isCreateProductCategory },
+  ] = useCreateProductCategoryMutation();
   const { data: categoriesData } = useGetProductCategoriesQuery({});
 
   const categories = categoriesData?.data || [];
@@ -354,10 +357,12 @@ export default function AddNewProductPage() {
         <div className='flex items-center gap-4 pt-6'>
           <button
             onClick={handlePublish}
-            disabled={isLoading}
+            disabled={isLoading || isCreateProductCategory}
             className='btn-gold min-w-35 disabled:opacity-50'
           >
-            {isLoading ? "Publishing..." : "Publish Product"}
+            {isLoading || isCreateProductCategory
+              ? "Publishing..."
+              : "Publish Product"}
           </button>
           <Link
             href='/admin/products'

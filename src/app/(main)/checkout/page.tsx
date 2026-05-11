@@ -80,16 +80,29 @@ export default function CheckoutPage() {
     try {
       const res = await createOrderMutation(orderData).unwrap();
 
-      if (res?.status === "success") {
-        toast.success("Order placed successfully!");
-        setTimeout(() => {
-          window.open(res?.data?.approval_url, "_blank");
-        }, 999);
+      if (res?.status === "success" || res?.data?.approval_url) {
+        toast.success("Order placed! Redirecting to payment...");
+
+        // Clear cart immediately so they don't double-order
         clearCart();
+
+        const paymentUrl = res.data.approval_url;
+
+        if (paymentUrl) {
+          setTimeout(() => {
+            window.location.href = paymentUrl; // Better UX than a popup in many cases
+            // OR: window.open(paymentUrl, "_blank");
+          }, 1500);
+        }
+
+        // Optional: Redirect the main tab to the orders page
+        // router.push("/account/orders");
       }
-      // router.push("/account/orders");
     } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to place order");
+      const errorMsg =
+        err?.data?.message || "Something went wrong. Please try again.";
+      toast.error(errorMsg);
+      console.error("Order Error:", err);
     }
   };
 
@@ -286,16 +299,16 @@ export default function CheckoutPage() {
                     ${subtotal.toFixed(2)}
                   </span>
                 </div>
-                <div className='flex justify-between text-sm'>
+                {/* <div className='flex justify-between text-sm'>
                   <span className='text-muted-foreground'>Tax (10%)</span>
                   <span className='text-foreground font-medium'>
                     ${tax.toFixed(2)}
                   </span>
-                </div>
+                </div> */}
                 <div className='flex justify-between pt-2 border-t border-border'>
                   <span className='font-bold text-foreground'>Total</span>
                   <span className='font-bold text-gold text-xl'>
-                    ${total.toFixed(2)}
+                    {/* ${total.toFixed(2)} */}${subtotal.toFixed(2)}
                   </span>
                 </div>
               </div>

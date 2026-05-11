@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import VideoCard from "@/components/VideoCard";
@@ -20,6 +20,9 @@ export default function VideoDetailPage() {
   const router = useRouter();
   const params = useParams().id as string;
   const [showPayment, setShowPayment] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuth();
 
   const { toggleWishlist, isInWishlist } = useVideoWishlist();
@@ -32,8 +35,6 @@ export default function VideoDetailPage() {
   const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id, {
     skip: !video?.is_unlocked,
   });
-
-  console.log({ getVideoStreamData });
 
   if (isLoading) {
     return (
@@ -71,7 +72,6 @@ export default function VideoDetailPage() {
 
       if (res.status === "success") {
         toast.success(res?.message || res?.data?.detail);
-        console.log(res);
         setTimeout(() => {
           window.open(res?.data?.approval_url, "_blank");
         }, 3000);
@@ -86,26 +86,57 @@ export default function VideoDetailPage() {
       {/* Video Player */}
       <div className='relative aspect-video w-full overflow-hidden rounded-xl bg-surface border border-border'>
         {video.is_unlocked ? (
-          /* Fully unlocked — show the real trailer/video */
-          <video
-            key={getVideoStreamData?.data || video.trailer} // Key forces re-render when switching from trailer to stream
-            src={getVideoStreamData?.data || video.trailer}
-            poster={video.thumbnail}
-            controls
-            autoPlay={!!getVideoStreamData?.data} // Auto play when stream becomes available
-            controlsList='nodownload'
-            onContextMenu={(e) => e.preventDefault()}
-            className='h-full w-full object-cover'
-          />
+          /* Fully unlocked — streaming video with buffering overlay */
+          <div className='relative h-full w-full bg-black'>
+            {/* Buffering Overlay */}
+            {isBuffering && (
+              <div className='absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm gap-3 pointer-events-none'>
+                <svg
+                  className='animate-spin h-14 w-14 text-gold'
+                  viewBox='0 0 50 50'
+                  fill='none'
+                >
+                  <circle
+                    cx='25'
+                    cy='25'
+                    r='20'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                    strokeLinecap='round'
+                    strokeDasharray='80 40'
+                  />
+                </svg>
+                <p className='text-sm text-gold font-medium tracking-wide'>
+                  {!hasStarted ? "Loading video…" : "Buffering…"}
+                </p>
+              </div>
+            )}
+
+            <video
+              ref={videoRef}
+              key={getVideoStreamData?.data || video.trailer}
+              src={getVideoStreamData?.data || video.trailer}
+              poster={video.thumbnail}
+              controls
+              autoPlay={!!getVideoStreamData?.data}
+              controlsList='nodownload'
+              onContextMenu={(e) => e.preventDefault()}
+              className='h-full w-full object-contain'
+              onLoadStart={() => {
+                setIsBuffering(true);
+                setHasStarted(false);
+              }}
+              onWaiting={() => setIsBuffering(true)}
+              onStalled={() => setIsBuffering(true)}
+              onCanPlay={() => setIsBuffering(false)}
+              onPlaying={() => {
+                setIsBuffering(false);
+                setHasStarted(true);
+              }}
+              onError={() => setIsBuffering(false)}
+            />
+          </div>
         ) : (
-          // <video
-          //   src={video.trailer}
-          //   poster={video.thumbnail}
-          //   controls
-          //   controlsList='nodownload'
-          //   onContextMenu={(e) => e.preventDefault()}
-          //   className='h-full w-full object-cover'
-          // />
           /* Locked — show thumbnail preview */
           <>
             <Image
@@ -211,7 +242,6 @@ export default function VideoDetailPage() {
           )}
 
           <button
-            // onClick={toggleWishlist}
             onClick={() => toggleWishlist(video)}
             className={`flex items-center gap-2 rounded-lg border px-6 py-3 text-sm font-semibold transition-all ${
               isInWishlist(video.id)
@@ -289,3 +319,295 @@ export default function VideoDetailPage() {
     </div>
   );
 }
+
+// /* eslint-disable @typescript-eslint/no-explicit-any */
+// "use client";
+
+// import { useState } from "react";
+// import Image from "next/image";
+// import { useParams, useRouter } from "next/navigation";
+// import VideoCard from "@/components/VideoCard";
+// import SectionHeader from "@/components/SectionHeader";
+// import {
+//   useUnlockVideoByOrderMutation,
+//   useGetVideoStreamQuery,
+// } from "@/redux/features/video/videoAPI";
+// import { useVideoWishlist } from "@/hooks/useVideoWishlist";
+// import { toast } from "sonner";
+// import { Loader } from "lucide-react";
+// import { useAuth } from "@/hooks/useAuth";
+// import { useGetVideoQuery } from "@/redux/features/admin/videoAPI";
+
+// export default function VideoDetailPage() {
+//   const router = useRouter();
+//   const params = useParams().id as string;
+//   const [showPayment, setShowPayment] = useState(false);
+//   const { user } = useAuth();
+
+//   const { toggleWishlist, isInWishlist } = useVideoWishlist();
+//   const [unlockVideoByOrderMutation, { isLoading: isUnlockingVideo }] =
+//     useUnlockVideoByOrderMutation();
+//   const { data: videoData, isLoading, isError } = useGetVideoQuery(params);
+
+//   const video = videoData?.data;
+
+//   const { data: getVideoStreamData } = useGetVideoStreamQuery(video?.id, {
+//     skip: !video?.is_unlocked,
+//   });
+
+//   console.log({ getVideoStreamData });
+
+//   if (isLoading) {
+//     return (
+//       <div className='flex items-center justify-center min-h-100'>
+//         <p className='text-muted text-lg'>Loading...</p>
+//       </div>
+//     );
+//   }
+
+//   if (isError || !video) {
+//     return (
+//       <div className='flex items-center justify-center min-h-100'>
+//         <p className='text-muted text-lg'>Video not found</p>
+//       </div>
+//     );
+//   }
+
+//   const related = video.related_videos ?? [];
+
+//   const catColor =
+//     video.category_name?.toLowerCase() === "entertainment"
+//       ? "bg-gold/80 text-black"
+//       : "bg-emerald-600/80 text-white";
+
+//   const handleUnlockVideo = async (videoId: string) => {
+//     if (!user) {
+//       router.push("/login");
+//       return;
+//     }
+
+//     try {
+//       const res = await unlockVideoByOrderMutation({
+//         video_id: videoId,
+//       }).unwrap();
+
+//       if (res.status === "success") {
+//         toast.success(res?.message || res?.data?.detail);
+//         console.log(res);
+//         setTimeout(() => {
+//           window.open(res?.data?.approval_url, "_blank");
+//         }, 3000);
+//       }
+//     } catch (error) {
+//       console.error("Error unlocking video:", error);
+//     }
+//   };
+
+//   return (
+//     <div className='mx-auto container px-4 py-8 lg:px-8'>
+//       {/* Video Player */}
+//       <div className='relative aspect-video w-full overflow-hidden rounded-xl bg-surface border border-border'>
+//         {video.is_unlocked ? (
+//           /* Fully unlocked — show the real trailer/video */
+//           <video
+//             key={getVideoStreamData?.data || video.trailer} // Key forces re-render when switching from trailer to stream
+//             src={getVideoStreamData?.data || video.trailer}
+//             poster={video.thumbnail}
+//             controls
+//             autoPlay={!!getVideoStreamData?.data} // Auto play when stream becomes available
+//             controlsList='nodownload'
+//             onContextMenu={(e) => e.preventDefault()}
+//             className='h-full w-full object-cover'
+//           />
+//         ) : (
+//           // <video
+//           //   src={video.trailer}
+//           //   poster={video.thumbnail}
+//           //   controls
+//           //   controlsList='nodownload'
+//           //   onContextMenu={(e) => e.preventDefault()}
+//           //   className='h-full w-full object-cover'
+//           // />
+//           /* Locked — show thumbnail preview */
+//           <>
+//             <Image
+//               src={video.thumbnail}
+//               alt={video.title}
+//               fill
+//               unoptimized
+//               className='object-cover'
+//               sizes='100vw'
+//               priority
+//             />
+//             <span className='absolute right-4 top-4 rounded-md bg-black/50 px-3 py-1.5 text-sm font-semibold text-gold italic backdrop-blur-sm'>
+//               Preview Only
+//             </span>
+//             <div className='absolute inset-0 flex items-center justify-center cursor-pointer'>
+//               <div className='flex h-16 w-16 items-center justify-center rounded-full border-2 border-gold bg-gold/20 text-gold backdrop-blur-sm transition-all hover:bg-gold/30 hover:scale-110'>
+//                 <svg
+//                   className='h-7 w-7 ml-1'
+//                   fill='currentColor'
+//                   viewBox='0 0 24 24'
+//                 >
+//                   <path d='M8 5v14l11-7z' />
+//                 </svg>
+//               </div>
+//             </div>
+//             <div className='absolute bottom-0 left-0 right-0 p-4'>
+//               <div className='flex items-center gap-3'>
+//                 <div className='flex-1 h-1 rounded-full bg-border overflow-hidden'>
+//                   <div className='h-full w-1/3 rounded-full gold-gradient' />
+//                 </div>
+//                 <span className='text-xs text-foreground/70 font-mono'>
+//                   {video.duration_display}
+//                 </span>
+//               </div>
+//             </div>
+//           </>
+//         )}
+//       </div>
+
+//       {/* Video Info */}
+//       <div className='mt-6'>
+//         <span
+//           className={`inline-block rounded-md px-3 py-1 text-xs font-semibold ${catColor}`}
+//         >
+//           {video.category_name}
+//         </span>
+//         <h1 className='mt-3 text-2xl font-bold text-foreground md:text-3xl'>
+//           {video.title}
+//         </h1>
+//         <div className='mt-2 flex items-center gap-4 text-sm text-muted'>
+//           <span>{video.duration_display}</span>
+//           <span>{video.views_count?.toLocaleString()} Views</span>
+//         </div>
+//         <div className='mt-6'>
+//           <h3 className='text-sm font-semibold text-foreground'>Description</h3>
+//           <p className='mt-2 text-sm text-muted leading-relaxed'>
+//             {video.description}
+//           </p>
+//         </div>
+
+//         {/* Actions */}
+//         <div className='mt-6 flex flex-wrap gap-3'>
+//           {video.is_unlocked ? (
+//             <button
+//               disabled
+//               className='flex items-center gap-2 rounded-lg bg-surface-light px-4 py-2.5 text-sm font-semibold text-green-500 border border-green-500 cursor-default'
+//             >
+//               <svg
+//                 className='h-4 w-4'
+//                 fill='none'
+//                 stroke='currentColor'
+//                 viewBox='0 0 24 24'
+//               >
+//                 <path
+//                   strokeLinecap='round'
+//                   strokeLinejoin='round'
+//                   strokeWidth='2'
+//                   d='M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z'
+//                 />
+//               </svg>
+//               Video Unlocked
+//             </button>
+//           ) : (
+//             <button
+//               onClick={() => setShowPayment(true)}
+//               className='btn-gold flex items-center gap-2 text-sm'
+//             >
+//               <svg
+//                 className='h-4 w-4'
+//                 fill='none'
+//                 stroke='currentColor'
+//                 viewBox='0 0 24 24'
+//               >
+//                 <path
+//                   strokeLinecap='round'
+//                   strokeLinejoin='round'
+//                   strokeWidth='2'
+//                   d='M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z'
+//                 />
+//               </svg>
+//               Unlock Full Video — ${video.price}
+//             </button>
+//           )}
+
+//           <button
+//             // onClick={toggleWishlist}
+//             onClick={() => toggleWishlist(video)}
+//             className={`flex items-center gap-2 rounded-lg border px-6 py-3 text-sm font-semibold transition-all ${
+//               isInWishlist(video.id)
+//                 ? "border-gold bg-gold/10 text-gold"
+//                 : "border-border text-muted hover:border-gold/30 hover:text-foreground"
+//             }`}
+//           >
+//             <svg
+//               className='h-4 w-4'
+//               fill={isInWishlist(video.id) ? "currentColor" : "none"}
+//               stroke='currentColor'
+//               viewBox='0 0 24 24'
+//             >
+//               <path
+//                 strokeLinecap='round'
+//                 strokeLinejoin='round'
+//                 strokeWidth='2'
+//                 d='M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z'
+//               />
+//             </svg>
+//             {isInWishlist(video.id) ? "In Wishlist" : "Add to Wishlist"}
+//           </button>
+//         </div>
+//       </div>
+
+//       {/* Related Videos */}
+//       {related.length > 0 && (
+//         <section className='mt-16'>
+//           <SectionHeader title='Related Videos' href='/video' />
+//           <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+//             {related.map((v: any) => (
+//               <VideoCard key={v.id} video={v} />
+//             ))}
+//           </div>
+//         </section>
+//       )}
+
+//       {/* Payment Modal */}
+//       {showPayment && (
+//         <div className='fixed inset-0 z-100 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4'>
+//           <div
+//             className='absolute inset-0'
+//             onClick={() => setShowPayment(false)}
+//           />
+//           <div className='relative w-full max-w-md card-border bg-surface p-6 shadow-2xl'>
+//             <h2 className='text-lg font-bold text-foreground'>
+//               Payment Method
+//             </h2>
+//             <p className='mt-2 text-sm text-muted'>
+//               You will be redirected to PayPal to complete your payment
+//               securely.
+//             </p>
+//             <button
+//               onClick={() => handleUnlockVideo(video.id)}
+//               disabled={isUnlockingVideo}
+//               className='btn-gold mt-6 w-full py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
+//             >
+//               {isUnlockingVideo
+//                 ? "Payment Processing "
+//                 : `Pay with PayPal — ${video.price} `}
+//               {isUnlockingVideo && (
+//                 <Loader className='animate-spin' size={16} />
+//               )}
+//             </button>
+//             <button
+//               onClick={() => setShowPayment(false)}
+//               disabled={isUnlockingVideo}
+//               className='mt-3 w-full py-2 text-sm text-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+//             >
+//               Cancel
+//             </button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
