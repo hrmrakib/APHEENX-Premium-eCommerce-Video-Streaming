@@ -10,6 +10,7 @@ import {
   Users,
   Settings,
   X,
+  Megaphone,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -24,6 +25,7 @@ const navItems = [
   { name: "Videos", href: "/admin/videos", icon: Video },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { name: "Users", href: "/admin/users", icon: Users },
+  { name: "Announcements", href: "/admin/announcements", icon: Megaphone },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
