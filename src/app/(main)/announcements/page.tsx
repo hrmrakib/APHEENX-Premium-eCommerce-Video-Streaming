@@ -392,7 +392,7 @@ export default function AnnouncementPage() {
     <>
       <style>{globalStyles}</style>
 
-      <div className='font-dm bg-[#111010] text-[#f0ead8] min-h-screen p-8 px-6'>
+      <div className='container mx-auto font-dm bg-transparent text-[#f0ead8] min-h-screen p-8 px-6'>
         {/* ── Header ── */}
         <div className='flex items-end justify-between mb-10 gap-4 flex-wrap'>
           <div>
@@ -475,14 +475,14 @@ export default function AnnouncementPage() {
                   <h3 className='font-cormorant text-[1.25rem] font-semibold text-[#f0ead8] leading-[1.3]'>
                     {ann.title}
                   </h3>
-                  <div
+                  {/* <div
                     className='flex gap-1.5 shrink-0'
                     onClick={(e: React.MouseEvent) => e.stopPropagation()}
                   >
                     <BtnIconDel onClick={(e) => openDelete(ann, e)}>
                       <TrashIcon />
                     </BtnIconDel>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Meta */}
@@ -561,24 +561,6 @@ export default function AnnouncementPage() {
             title='Announcement'
             titleStyle={{ fontSize: "1.2rem" }}
             onClose={closeModal}
-            extra={
-              <BtnIconEdit onClick={(e) => {}}>
-                <svg
-                  width='15'
-                  height='15'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='1.8'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    d='m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z'
-                  />
-                </svg>
-              </BtnIconEdit>
-            }
           />
           <div className='px-7 py-6'>
             <div className='inline-flex items-center gap-1.5 text-[0.72rem] text-[#8a8070] uppercase tracking-[0.06em] px-3 py-[0.4rem] bg-[#201f1c] border border-[rgba(201,168,76,0.15)] rounded-full mb-5'>
