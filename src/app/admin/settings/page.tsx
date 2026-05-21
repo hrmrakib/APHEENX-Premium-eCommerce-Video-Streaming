@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { RoleRedirect } from "@/components/auth/RoleRedirect";
+import { useDispatch } from "react-redux";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function AdminSettingsPage() {
   const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
   const [changePasswordMutation, { isLoading: passwordChanging }] =
     useChangePasswordMutation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (user) {
@@ -101,7 +103,8 @@ export default function AdminSettingsPage() {
   const confirmSignOut = async () => {
     localStorage.removeItem("access_token");
     await logout();
-    LOGOUT();
+
+    dispatch(LOGOUT());
     router.push("/login");
   };
 

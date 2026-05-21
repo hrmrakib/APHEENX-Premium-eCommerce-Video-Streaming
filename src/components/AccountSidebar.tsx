@@ -8,6 +8,7 @@ import { LogOut, AlertCircle } from "lucide-react"; // I recommend Lucide for cl
 import Image from "next/image";
 import { logout } from "@/service/authService";
 import { logout as LOGOUT } from "@/redux/features/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 const menuItems = [
   { label: "Dashboard", href: "/account", icon: "user" },
@@ -90,11 +91,12 @@ export default function AccountSidebar() {
   const router = useRouter();
   const { user } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const dispatch = useDispatch();
 
   const confirmSignOut = async () => {
     localStorage.removeItem("access_token");
     await logout();
-    LOGOUT();
+    dispatch(LOGOUT());
     router.push("/login");
   };
 

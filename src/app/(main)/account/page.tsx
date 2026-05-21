@@ -37,8 +37,6 @@ export default function AccountDashboard() {
 
   const orders = userDashboard?.recent_orders || [];
 
-  console.log({ userDashboard });
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
