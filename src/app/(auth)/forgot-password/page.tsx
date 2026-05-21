@@ -28,10 +28,10 @@ export default function ForgotPasswordPage() {
 
     try {
       // Use .unwrap() to catch the error in the catch block
-      await forgotPasswordMutation({ email }).unwrap();
+      const res = await forgotPasswordMutation({ email }).unwrap();
 
       setIsSuccess(true);
-      toast.success("Reset link sent successfully!");
+      toast.success(res.message || "Reset link sent successfully!");
 
       setTimeout(() => {
         router.push("/verify?email=" + email + "&type=forgot-password");

@@ -42,18 +42,20 @@ export default function SignUpPage() {
     }
 
     try {
-      await registerMutation({
+      const res = await registerMutation({
         name: fullName,
         email,
         password,
         password_confirm: confirmPassword,
-      });
+      }).unwrap();
 
-      toast.success("Sign up successful. Please verify your email");
+      toast.success(
+        res?.message || "Sign up successful. Please verify your email",
+      );
       router.push(`/verify?email=${email}&type=signup`);
     } catch (err: any) {
       const errorMessage =
-        err?.response?.data?.message ||
+        err?.data?.message ||
         err?.message ||
         "An error occurred during sign up";
 

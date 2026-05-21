@@ -1,18 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useResetPasswordMutation } from "@/redux/features/auth/authAPI";
+import { toast } from "sonner";
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageComponent() {
+  const searchParams = useSearchParams();
+  const reset_token = searchParams.get("reset_token");
+
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [resetPasswordMutation, { isLoading }] = useResetPasswordMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,17 +39,22 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = resetPasswordMutation({
+        reset_token,
+        new_password: password,
+        new_password_confirm: confirmPassword,
+      }).unwrap();
+
       setSuccess(true);
 
-      // Redirect to login after successful reset
       setTimeout(() => {
         router.push("/login");
-      }, 3000);
-    }, 1500);
+      }, 1500);
+      console.log({ res });
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to reset password");
+    }
   };
 
   if (success) {
@@ -129,7 +140,7 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className='input-field pl-8! pr-10'
-                disabled={isSubmitting}
+                disabled={isLoading}
               />
               <button
                 type='button'
@@ -197,7 +208,7 @@ export default function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className='input-field pl-8! pr-10'
-                disabled={isSubmitting}
+                disabled={isLoading}
               />
               <button
                 type='button'
@@ -240,13 +251,21 @@ export default function ResetPasswordPage() {
 
           <button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isLoading}
             className='btn-gold w-full py-3 text-sm disabled:opacity-50 mt-8'
           >
-            {isSubmitting ? "Resetting Password..." : "Reset Password"}
+            {isLoading ? "Resetting Password..." : "Reset Password"}
           </button>
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordPageComponent />
+    </Suspense>
   );
 }

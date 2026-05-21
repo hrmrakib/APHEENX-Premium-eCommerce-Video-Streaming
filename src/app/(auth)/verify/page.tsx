@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useRef, useEffect, useCallback, Suspense } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { toast } from "sonner";
 import {
   useResendOtpMutation,
   useVerifyEmailMutation,
+  useVerifyResetOtpMutation,
 } from "@/redux/features/auth/authAPI";
 
 function VerifyPageComponent() {
@@ -20,6 +21,7 @@ function VerifyPageComponent() {
   const [resendTimer, setResendTimer] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  const [verifyResetOtpMutation] = useVerifyResetOtpMutation();
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
   const [resendEmail, { isLoading: isResending }] = useResendOtpMutation();
 
@@ -77,28 +79,43 @@ function VerifyPageComponent() {
     }
 
     try {
-      const res = await verifyEmail({ email, otp: fullCode }).unwrap();
+      let res;
+
+      if (type === "signup") {
+        res = await verifyEmail({ email, otp: fullCode }).unwrap();
+      } else {
+        res = await verifyResetOtpMutation({
+          email,
+          otp: fullCode,
+        }).unwrap();
+      }
 
       toast.success(res?.message);
 
-      router.push(type === "signup" ? "/login" : "/");
+      router.push(
+        type === "signup"
+          ? "/login"
+          : `/reset-password?reset_token=${res?.data?.reset_token}`,
+      );
     } catch (err: any) {
       setError(err?.data?.message || "Verification failed. Please try again.");
     }
-  }, [code, email, type, router, verifyEmail]);
+  }, [code, email, type, router, verifyEmail, verifyResetOtpMutation]);
 
   const handleResend = async () => {
     try {
       const res = await resendEmail({
         email,
-        purpose: "email_verification",
+        purpose: "password_reset",
       }).unwrap();
 
       console.log({ res });
       if (res?.message) {
         toast.success(res.message || "OTP Resent successfully");
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast.success(error?.data?.message || "OTP Resent successfully");
+
       console.log(error);
     }
 
@@ -157,10 +174,12 @@ function VerifyPageComponent() {
             <span className='text-gold'>Resend in {resendTimer}s</span>
           ) : (
             <button
+              disabled={isResending}
+              title={`${isResending && "OTP requesting ....."}`}
               onClick={handleResend}
-              className='text-gold hover:text-gold-light transition-colors'
+              className='text-gold hover:text-gold-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              Resend code
+              {isResending ? "Resending..." : "Resend code"}
             </button>
           )}
         </p>

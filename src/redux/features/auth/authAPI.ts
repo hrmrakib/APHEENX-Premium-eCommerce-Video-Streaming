@@ -96,6 +96,14 @@ const authAPI = baseAPI.injectEndpoints({
         body: payload,
       }),
     }),
+
+    verifyResetOtp: builder.mutation({
+      query: (payload) => ({
+        url: "/auth/verify-reset-otp/",
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -110,5 +118,6 @@ export const {
   useChangePasswordMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useVerifyResetOtpMutation,
 } = authAPI;
 export default authAPI;
