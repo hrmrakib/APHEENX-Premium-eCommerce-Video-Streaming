@@ -20,7 +20,7 @@ function ResetPasswordPageComponent() {
   const [success, setSuccess] = useState(false);
   const [resetPasswordMutation, { isLoading }] = useResetPasswordMutation();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -29,8 +29,8 @@ function ResetPasswordPageComponent() {
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
       return;
     }
 
@@ -40,7 +40,7 @@ function ResetPasswordPageComponent() {
     }
 
     try {
-      const res = resetPasswordMutation({
+      const res = await resetPasswordMutation({
         reset_token,
         new_password: password,
         new_password_confirm: confirmPassword,
@@ -51,6 +51,8 @@ function ResetPasswordPageComponent() {
       setTimeout(() => {
         router.push("/login");
       }, 1500);
+
+      toast.success(res?.message);
       console.log({ res });
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to reset password");
