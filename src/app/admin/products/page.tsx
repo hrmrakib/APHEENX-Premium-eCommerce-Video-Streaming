@@ -71,6 +71,7 @@ export default function AdminProductsPage() {
 
   const { data: productsData, isLoading } = useGetAllProductsQuery({
     page: currentPage,
+    page_size: 10,
   });
 
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();

@@ -1,13 +1,15 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useProductCart } from "@/hooks/useProductCart";
 import { useCreateOrderMutation } from "@/redux/features/order/orderAPI";
 import { toast } from "sonner";
 import { US_STATES } from "@/constants";
 import { RoleRedirect } from "@/components/auth/RoleRedirect";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CheckoutPage() {
   const { items, clearCart } = useProductCart();
@@ -23,6 +25,23 @@ export default function CheckoutPage() {
     postalCode: "",
     country: "United States",
   });
+  const { user } = useAuth();
+  console.log({ user });
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        fullName: user.name || "",
+        email: user.email || "",
+        mobile: "",
+        address: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "United States",
+      });
+    }
+  }, [user]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 

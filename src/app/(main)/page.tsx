@@ -58,12 +58,12 @@ export default function HomePage() {
                 src='/images/hero-banner.png'
                 alt='Shopping lifestyle'
                 fill
-                className='object-cover object-top opacity-40 rounded-2xl'
+                className='object-cover object-top opacity- rounded-2xl'
                 priority
                 sizes='100vw'
               />
-              <div className='absolute inset-0 bg-linear-to-r from-background via-background/80 to-transparent rounded-2xl' />
-              <div className='absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent rounded-2xl' />
+              <div className='absolute inset-0 bg-linear-to-r from-[#0a0a0ada] via-[#0a0a0aad] to-transparent rounded-2xl' />
+              <div className='absolute inset-0 bg-linear-to-t from-[#0a0a0a2c] via-transparent to-transparent rounded-2xl' />
             </div>
 
             {/* Content */}
@@ -151,6 +151,9 @@ export default function HomePage() {
               <VideoCard key={video.id} video={video} />
             ))}
         </div>
+        {featuredVideos?.length > 0 && (
+          <SectionHeader href='/video' className='justify-center my-10' />
+        )}
       </section>
 
       {/* Featured Products */}
@@ -169,6 +172,9 @@ export default function HomePage() {
               <ProductCard key={product.id} product={product} />
             ))}
         </div>
+        {featuredProducts?.length > 0 && (
+          <SectionHeader href='/shop' className='justify-center my-10' />
+        )}
       </section>
 
       {/* Best Viewed Videos */}
@@ -186,6 +192,9 @@ export default function HomePage() {
             <VideoCard key={`best-${video.id}`} video={video} />
           ))}
         </div>
+        {mostViewedVideos?.length > 0 && (
+          <SectionHeader href='/video' className='justify-center my-10' />
+        )}
       </section>
 
       {/* Best Deals */}
@@ -206,6 +215,9 @@ export default function HomePage() {
               />
             ))}
         </div>
+        {bestDeals?.length > 0 && (
+          <SectionHeader href='/shop' className='justify-center my-10' />
+        )}
       </section>
 
       {/* Newest Videos */}
@@ -224,6 +236,9 @@ export default function HomePage() {
               <NewestVideoCard key={video.id} video={video} />
             ))}
         </div>
+        {newestVideos?.length > 0 && (
+          <SectionHeader href='/video' className='justify-center my-10' />
+        )}
       </section>
     </div>
   );

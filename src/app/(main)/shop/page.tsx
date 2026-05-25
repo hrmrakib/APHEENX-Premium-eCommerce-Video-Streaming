@@ -33,7 +33,7 @@ export default function ShopPage() {
   const [category, setCategory] = useState("all");
   const [activeTab, setActiveTab] = useState<FilterTab>(null);
   const [search, setSearch] = useState("");
-  const searchQuery = useDebounce(search);
+  const searchQuery = useDebounce(search, 999);
   const [page, setPage] = useState(1);
 
   const { data: productsData, isFetching } = useGetAllProductsQuery({
@@ -75,7 +75,10 @@ export default function ShopPage() {
             </label>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setPage(1);
+              }}
               className="input-field w-auto min-w-45 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23888%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22m19.5%208.25-7.5%207.5-7.5-7.5%22%2F%3E%3C%2Fsvg%3E')] bg-size-[16px] bg-position-[right_12px_center] bg-no-repeat pr-10"
             >
               {categories.map((cat: TCategory) => (
@@ -95,7 +98,10 @@ export default function ShopPage() {
             <input
               type='text'
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               placeholder='Search products...'
               className='input-field'
             />
@@ -107,13 +113,14 @@ export default function ShopPage() {
           {tabs.map((tab) => (
             <button
               key={tab.value}
-              onClick={() =>
+              onClick={() => {
                 setActiveTab(
                   activeTab === (tab.value as FilterTab)
                     ? null
                     : (tab.value as FilterTab),
-                )
-              }
+                );
+                setPage(1);
+              }}
               className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                 activeTab === tab.value
                   ? "gold-gradient text-black shadow-lg shadow-gold/20"

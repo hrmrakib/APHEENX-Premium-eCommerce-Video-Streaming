@@ -4,12 +4,19 @@ const productAdminAPI = baseAPI.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
     getAllProducts: builder.query({
-      query: () => "/products/",
+      query: (params) => ({
+        url: "/products/",
+        method: "GET",
+        params,
+      }),
       providesTags: ["Product"],
     }),
 
     getProductById: builder.query({
-      query: (id) => `/products/${id}`,
+      query: (id) => ({
+        url: `/products/${id}`,
+        method: "GET",
+      }),
       providesTags: ["Product"],
     }),
 
