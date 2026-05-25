@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -59,7 +60,7 @@ const TableSkeleton = () => (
 );
 
 export default function AdminProductsPage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [page, setPage] = useState(1);
 
   // Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -69,9 +70,9 @@ export default function AdminProductsPage() {
     name: string;
   } | null>(null);
 
-  const { data: productsData, isLoading } = useGetAllProductsQuery({
-    page: currentPage,
-    page_size: 10,
+  const { data: productsData, isFetching } = useGetAllProductsQuery({
+    page,
+    page_size: 9,
   });
 
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
@@ -80,7 +81,7 @@ export default function AdminProductsPage() {
   const meta = productsData?.meta;
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    setPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -101,7 +102,7 @@ export default function AdminProductsPage() {
       await deleteProduct(productToDelete.slug).unwrap();
       toast.success("Product deleted successfully");
       setIsDeleteModalOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Failed to delete product");
     }
   };
@@ -142,7 +143,7 @@ export default function AdminProductsPage() {
                 </tr>
               </thead>
               <tbody className='divide-y divide-white/5'>
-                {isLoading ? (
+                {isFetching ? (
                   <TableSkeleton />
                 ) : (
                   products.map((product) => (
@@ -200,7 +201,7 @@ export default function AdminProductsPage() {
         </div>
 
         <GlobalPagination
-          currentPage={currentPage}
+          currentPage={page}
           totalPages={meta?.total_pages || 1}
           onPageChange={handlePageChange}
         />
