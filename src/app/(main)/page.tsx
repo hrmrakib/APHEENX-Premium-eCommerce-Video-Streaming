@@ -51,19 +51,31 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className='relative overflow-hidden'>
         <div className='mx-auto container px-4 lg:px-8'>
-          <div className='relative flex min-h-125 items-center py-16 md:min-h-150'>
+          <div className='relative flex min-h-125 items-center py-16 md:min-h-200'>
             {/* Background Image */}
             <div className='absolute inset-0 z-0'>
+              {/* Mobile image (< md) */}
+              <Image
+                src='/images/hero-banner2.png'
+                alt='Shopping lifestyle'
+                fill
+                className='object-cover object-center md:hidden'
+                priority
+                sizes='100vw'
+              />
+
+              {/* Desktop image (>= md) */}
               <Image
                 src='/images/hero-banner.png'
                 alt='Shopping lifestyle'
                 fill
-                className='object-cover object-top opacity- rounded-2xl'
+                className='object-cover object-center hidden md:block'
                 priority
                 sizes='100vw'
               />
-              <div className='absolute inset-0 bg-linear-to-r from-[#0a0a0ada] via-[#0a0a0aad] to-transparent rounded-2xl' />
-              <div className='absolute inset-0 bg-linear-to-t from-[#0a0a0a2c] via-transparent to-transparent rounded-2xl' />
+
+              <div className='absolute inset-0 bg-linear-to-r from-[#0a0a0ada] via-[#0a0a0aad] to-transparent rounded2xl' />
+              <div className='absolute inset-0 bg-linear-to-t from-[#0a0a0a2c] via-transparent to-transparent rounded2xl' />
             </div>
 
             {/* Content */}
