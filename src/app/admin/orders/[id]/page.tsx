@@ -19,6 +19,7 @@ export interface IOrderItem {
   id: number;
   product: number;
   product_name: string;
+  product_image: string;
   quantity: number;
   unit_price: string;
   subtotal: number;
@@ -202,8 +203,8 @@ export default function OrderDetailsPage() {
                             <div className='w-10 h-10 bg-black/5 rounded-2xl flex items-center justify-center'>
                               <Image
                                 className='rounded-sm'
-                                src={"/images/belt.png"}
-                                alt={item.product_name}
+                                src={item?.product_image}
+                                alt={item?.product_name}
                                 width={40}
                                 height={40}
                               />

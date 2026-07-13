@@ -147,12 +147,12 @@ export default function AdminOrdersPage() {
             <table className='w-full text-left text-sm text-white/80'>
               <thead className='bg-[#111] text-white/60 text-xs border-b border-white/10'>
                 <tr>
-                  <th className='px-6 py-4 font-medium'>Serial</th>
                   <th className='px-6 py-4 font-medium'>Order ID</th>
                   <th className='px-6 py-4 font-medium'>Customer</th>
                   <th className='px-6 py-4 font-medium'>Email</th>
                   <th className='px-6 py-4 font-medium'>Total</th>
-                  <th className='px-6 py-4 font-medium'>Status</th>
+                  <th className='px-6 py-4 font-medium'>Order Status</th>
+                  <th className='px-6 py-4 font-medium'>Payment Status</th>
                   <th className='px-6 py-4 font-medium'>Date</th>
                   <th className='px-6 py-4 font-medium text-center'>Actions</th>
                 </tr>
@@ -166,9 +166,6 @@ export default function AdminOrdersPage() {
                       key={order.id}
                       className='hover:bg-white/5 transition-colors'
                     >
-                      <td className='px-6 py-4 font-medium text-white'>
-                        {index + 1}
-                      </td>
                       <td className='px-6 py-4 font-medium text-white'>
                         #{order.id}
                       </td>
@@ -186,6 +183,15 @@ export default function AdminOrdersPage() {
                           )}`}
                         >
                           {order.order_status}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <span
+                          className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-semibold border ${getStatusColor(
+                            order.payment_status,
+                          )}`}
+                        >
+                          {order.payment_status}
                         </span>
                       </td>
                       <td className='px-6 py-4 text-white/60'>

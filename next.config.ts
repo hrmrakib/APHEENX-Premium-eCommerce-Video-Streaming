@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
         hostname: "apheenexx.pythonanywhere.com",
         pathname: "/media/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.apheenx.com",
+        // pathname: "/media/**",
+      },
     ],
   },
 };
