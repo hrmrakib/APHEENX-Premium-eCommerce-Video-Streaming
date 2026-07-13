@@ -106,6 +106,8 @@ export default function AdminSettingsPage() {
 
     dispatch(LOGOUT());
     router.push("/login");
+
+    console.log("admin logout ...........");
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
