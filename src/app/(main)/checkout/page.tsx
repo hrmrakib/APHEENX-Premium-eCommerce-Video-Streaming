@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useProductCart } from "@/hooks/useProductCart";
 import { useCreateOrderMutation } from "@/redux/features/order/orderAPI";
 import { toast } from "sonner";
@@ -12,8 +13,13 @@ import { RoleRedirect } from "@/components/auth/RoleRedirect";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { items, clearCart } = useProductCart();
   const [createOrderMutation, { isLoading }] = useCreateOrderMutation();
+  const [placedOrder, setPlacedOrder] = useState<{
+    paymentUrl: string;
+    orderId?: string | number;
+  } | null>(null);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -26,7 +32,6 @@ export default function CheckoutPage() {
     country: "United States",
   });
   const { user } = useAuth();
-  console.log({ user });
 
   useEffect(() => {
     if (user) {
@@ -91,35 +96,62 @@ export default function CheckoutPage() {
       postal_code: form.postalCode,
       country: form.country,
       items: items.map((item) => ({
-        product_id: item.product.id,
-        quantity: item.quantity,
+        product_id: Number(item.product.id),
+        quantity: Number(item.quantity),
       })),
     };
 
     try {
       const res = await createOrderMutation(orderData).unwrap();
 
-      if (res?.status === "success" || res?.data?.approval_url) {
-        toast.success("Order placed! Redirecting to payment...");
+      // Extract Stripe checkout URL from API response
+      const paymentUrl =
+        res?.data?.payment_url ||
+        res?.data?.url ||
+        res?.data?.checkout_url ||
+        res?.data?.stripe_url ||
+        res?.data?.approval_url ||
+        res?.url ||
+        res?.checkout_url;
 
+      if (paymentUrl) {
         // Clear cart immediately so they don't double-order
         clearCart();
 
-        const paymentUrl = res.data.approval_url;
+        // Open Stripe payment in a new tab
+        const newTab = window.open(paymentUrl, "_blank", "noopener,noreferrer");
 
-        if (paymentUrl) {
-          setTimeout(() => {
-            window.location.href = paymentUrl; // Better UX than a popup in many cases
-            // OR: window.open(paymentUrl, "_blank");
-          }, 1500);
+        setPlacedOrder({
+          paymentUrl,
+          orderId: res?.data?.id || res?.data?.order_id,
+        });
+
+        if (newTab) {
+          toast.success("Order placed! Opening Stripe payment in a new tab...", {
+            action: {
+              label: "Pay Now",
+              onClick: () =>
+                window.open(paymentUrl, "_blank", "noopener,noreferrer"),
+            },
+          });
+        } else {
+          toast.warning("Pop-up blocked! Click 'Pay Now' to complete your Stripe payment.", {
+            action: {
+              label: "Pay Now",
+              onClick: () =>
+                window.open(paymentUrl, "_blank", "noopener,noreferrer"),
+            },
+            duration: 10000,
+          });
         }
-
-        // Optional: Redirect the main tab to the orders page
-        // router.push("/account/orders");
+      } else if (res?.status === "success") {
+        clearCart();
+        toast.success(res?.message || "Order placed successfully!");
+        router.push("/account/orders");
       }
     } catch (err: any) {
       const errorMsg =
-        err?.data?.message || "Something went wrong. Please try again.";
+        err?.data?.message || err?.data?.detail || "Something went wrong. Please try again.";
       toast.error(errorMsg);
       console.error("Order Error:", err);
     }
@@ -264,12 +296,45 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* Payment Method Card */}
+            <div className='card-border bg-surface/50 p-6 rounded-xl border border-border space-y-3'>
+              <div className='flex items-center justify-between'>
+                <h2 className='text-lg font-bold text-foreground'>
+                  Payment Method
+                </h2>
+                <span className='text-xs font-semibold px-2.5 py-1 rounded bg-gold/10 text-gold border border-gold/30 uppercase tracking-wider'>
+                  Stripe Checkout
+                </span>
+              </div>
+              <p className='text-xs text-muted-foreground leading-relaxed'>
+                You will be redirected to Stripe in a new tab to complete your payment securely via Credit or Debit Card, Apple Pay, or Google Pay.
+              </p>
+              <div className='flex items-center gap-2 pt-2 border-t border-border/50 text-xs text-muted-foreground'>
+                <svg className='h-4 w-4 text-gold shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
+                </svg>
+                <span>End-to-end 256-bit SSL encrypted secure checkout via Stripe</span>
+              </div>
+            </div>
+
             <button
               disabled={isLoading}
               onClick={handlePlaceOrder}
-              className='w-full py-4 bg-gold text-black font-bold rounded-xl hover:bg-gold/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider'
+              className='w-full py-4 bg-gold text-black font-bold rounded-xl hover:bg-gold/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer'
             >
-              {isLoading ? "Processing..." : "Confirm & Place Order"}
+              {isLoading ? (
+                <>
+                  <div className='h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin' />
+                  <span>Connecting to Stripe...</span>
+                </>
+              ) : (
+                <>
+                  <span>Pay with Stripe — ${subtotal.toFixed(2)}</span>
+                  <svg className='h-4 w-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14' />
+                  </svg>
+                </>
+              )}
             </button>
           </div>
 
@@ -318,22 +383,61 @@ export default function CheckoutPage() {
                     ${subtotal.toFixed(2)}
                   </span>
                 </div>
-                {/* <div className='flex justify-between text-sm'>
-                  <span className='text-muted-foreground'>Tax (10%)</span>
-                  <span className='text-foreground font-medium'>
-                    ${tax.toFixed(2)}
-                  </span>
-                </div> */}
                 <div className='flex justify-between pt-2 border-t border-border'>
                   <span className='font-bold text-foreground'>Total</span>
                   <span className='font-bold text-gold text-xl'>
-                    {/* ${total.toFixed(2)} */}${subtotal.toFixed(2)}
+                    ${subtotal.toFixed(2)}
                   </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Placed Order Stripe Modal */}
+        {placedOrder && (
+          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md px-4'>
+            <div className='relative w-full max-w-md card-border bg-surface p-7 rounded-2xl border border-gold/30 shadow-2xl text-center space-y-5'>
+              <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 text-gold border border-gold/30'>
+                <svg className='h-8 w-8' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M5 13l4 4L19 7' />
+                </svg>
+              </div>
+              <div>
+                <h3 className='text-2xl font-bold text-foreground'>Order Created!</h3>
+                <p className='mt-2 text-sm text-muted-foreground'>
+                  A new tab has been opened to complete your payment with Stripe.
+                </p>
+                <p className='mt-1 text-xs text-muted-foreground'>
+                  If the payment page didn&apos;t open automatically, click the button below.
+                </p>
+              </div>
+              <div className='flex flex-col gap-3 pt-2'>
+                <button
+                  onClick={() =>
+                    window.open(
+                      placedOrder.paymentUrl,
+                      "_blank",
+                      "noopener,noreferrer",
+                    )
+                  }
+                  className='w-full py-3.5 bg-gold text-black font-bold rounded-xl hover:bg-gold/90 transition-all uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer'
+                >
+                  <span>Open Stripe Payment</span>
+                  <svg className='h-4 w-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14' />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => router.push("/account/orders")}
+                  className='w-full py-3 border border-border text-foreground hover:border-gold/50 rounded-xl transition-all text-sm font-medium cursor-pointer'
+                >
+                  View My Orders
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </RoleRedirect>
   );
