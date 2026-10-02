@@ -2,9 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { TFeaturedVideo } from "@/types/video.types";
+import { TFeaturedVideo, TVideo } from "@/types/video.types";
 
-export default function NewestVideoCard({ video }: { video: TFeaturedVideo }) {
+export default function NewestVideoCard({
+  video,
+}: {
+  video: TVideo | TFeaturedVideo;
+}) {
   const categoryColors: Record<string, string> = {
     entertainment: "bg-gold/80 text-black",
     tutorial: "bg-emerald-600/80 text-white",
@@ -26,7 +30,12 @@ export default function NewestVideoCard({ video }: { video: TFeaturedVideo }) {
                 ? "opacity-0 group-hover:opacity-100"
                 : "opacity-100"
             }`}
-            onMouseEnter={(e) => e.currentTarget.play()}
+            onMouseEnter={(e) => {
+              const playPromise = e.currentTarget.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(() => {});
+              }
+            }}
             onMouseLeave={(e) => {
               e.currentTarget.pause();
               e.currentTarget.currentTime = 0;
@@ -55,15 +64,15 @@ export default function NewestVideoCard({ video }: { video: TFeaturedVideo }) {
           {/* Category badge */}
           <span
             className={`absolute left-3 bottom-3 rounded-md px-2.5 py-1 text-[10px] font-semibold backdrop-blur-sm ${
-              categoryColors[video.category.slug] || "bg-border text-foreground"
+              categoryColors[video.category?.slug] || "bg-border text-foreground"
             }`}
           >
-            {video.category.name}
+            {video.category?.name}
           </span>
 
           {/* Price */}
           <span className='absolute right-3 bottom-3 text-base font-bold text-gold drop-shadow-lg'>
-            ${parseFloat(video.price).toFixed(2)}
+            ${parseFloat(video.price || "0").toFixed(2)}
           </span>
 
           {/* Play overlay */}

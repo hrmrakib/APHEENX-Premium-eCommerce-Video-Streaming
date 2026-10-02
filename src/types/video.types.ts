@@ -60,7 +60,7 @@ export type TFeaturedVideo = {
   price: string;
   thumbnail: string | null;
   trailer: string;
-  duration_display: string;
+  duration_display: string | null;
   views_count: number;
   is_featured: boolean;
   is_unlocked: boolean;

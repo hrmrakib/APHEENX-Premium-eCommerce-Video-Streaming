@@ -170,14 +170,20 @@ export default function WishlistPage() {
                     {/* Thumbnail / Link */}
                     <Link href={`/video/${video.slug || video.id}`}>
                       <div className='relative aspect-video overflow-hidden bg-surface'>
-                        <Image
-                          src={video.thumbnail}
-                          alt={video.title}
-                          fill
-                          unoptimized
-                          className='object-cover'
-                          sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
-                        />
+                        {video.thumbnail ? (
+                          <Image
+                            src={video.thumbnail}
+                            alt={video.title}
+                            fill
+                            unoptimized
+                            className='object-cover'
+                            sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                          />
+                        ) : (
+                          <div className='absolute inset-0 flex items-center justify-center bg-surface-light text-muted text-xs'>
+                            No thumbnail
+                          </div>
+                        )}
                         {/* Featured Badge */}
                         {video.is_featured && (
                           <span className='absolute left-3 top-3 rounded-md bg-gold/90 px-2.5 py-1 text-[10px] font-bold text-black uppercase tracking-wider'>
@@ -185,9 +191,11 @@ export default function WishlistPage() {
                           </span>
                         )}
                         {/* Duration Overlay */}
-                        <span className='absolute bottom-2 right-2 rounded bg-black/70 px-2 py-0.5 text-[10px] text-white'>
-                          {video.duration_display}
-                        </span>
+                        {video.duration_display && (
+                          <span className='absolute bottom-2 right-2 rounded bg-black/70 px-2 py-0.5 text-[10px] text-white'>
+                            {video.duration_display}
+                          </span>
+                        )}
                       </div>
                     </Link>
 
