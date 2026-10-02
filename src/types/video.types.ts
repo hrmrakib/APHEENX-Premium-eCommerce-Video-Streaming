@@ -13,7 +13,7 @@ export type TVideo = {
   thumbnail: string | null;
   trailer: string;
   short_description: string;
-  duration_display: string;
+  duration_display: string | null;
   views_count: number;
   is_featured: boolean;
   is_unlocked: boolean;
@@ -24,9 +24,9 @@ export type VideoList = TVideo[];
 
 export type TVideoDetail = {
   id: number;
-  category_name: string;
-  category: number; // category ID
-  duration_display: string;
+  category_name?: string;
+  category: number | Category; // category ID or Category object
+  duration_display: string | null;
   is_unlocked: boolean;
   title: string;
   slug: string;
@@ -34,9 +34,12 @@ export type TVideoDetail = {
   price: string;
   thumbnail: string | null;
   trailer: string;
-  duration: number; // duration in seconds
+  duration: number | null; // duration in seconds
   views_count: number;
   is_featured: boolean;
+  cf_stream_uid?: string;
+  main_video?: string | null;
+  related_videos?: TVideo[];
   created_at: string;
   updated_at: string;
 };

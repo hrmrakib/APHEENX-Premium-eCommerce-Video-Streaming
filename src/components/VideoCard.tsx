@@ -28,7 +28,12 @@ export default function VideoCard({ video }: { video: TVideo }) {
                 ? "opacity-0 group-hover:opacity-100"
                 : "opacity-100"
             }`}
-            onMouseEnter={(e) => e.currentTarget.play()}
+            onMouseEnter={(e) => {
+              const playPromise = e.currentTarget.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(() => {});
+              }
+            }}
             onMouseLeave={(e) => {
               e.currentTarget.pause();
               e.currentTarget.currentTime = 0;
@@ -55,17 +60,26 @@ export default function VideoCard({ video }: { video: TVideo }) {
           )}
 
           {/* Category badge */}
-          <span
-            className={`absolute left-3 bottom-3 rounded-md px-2.5 py-1 text-[10px] font-semibold backdrop-blur-sm ${
-              categoryColors[video.category.slug] || "bg-border text-foreground"
-            }`}
-          >
-            {video.category.name}
-          </span>
+          {((typeof video.category === "object" && video.category?.name) ||
+            (video as any).category_name) && (
+            <span
+              className={`absolute left-3 bottom-3 rounded-md px-2.5 py-1 text-[10px] font-semibold backdrop-blur-sm ${
+                categoryColors[
+                  typeof video.category === "object"
+                    ? video.category?.slug
+                    : ""
+                ] || "bg-border text-foreground"
+              }`}
+            >
+              {typeof video.category === "object"
+                ? video.category?.name
+                : (video as any).category_name}
+            </span>
+          )}
 
           {/* Price */}
           <span className='absolute right-3 bottom-3 text-base font-bold text-gold drop-shadow-lg'>
-            ${parseFloat(video.price).toFixed(2)}
+            ${parseFloat(video.price || "0").toFixed(2)}
           </span>
 
           {/* Play overlay */}

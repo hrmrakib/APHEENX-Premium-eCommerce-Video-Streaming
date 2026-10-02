@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
         hostname: "api.apheenx.com",
         // pathname: "/media/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.r2.cloudflarestorage.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.cloudflarestorage.com",
+        pathname: "/**",
+      },
     ],
   },
 };
